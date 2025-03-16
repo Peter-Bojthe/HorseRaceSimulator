@@ -14,11 +14,11 @@
 
 public class Horse {
     //Fields of class Horse
-    char horseSymbol;
-    String horseName;
-    double horseConfidence;
-    int horseDistance;
-    boolean horseFallen;
+    private char horseSymbol;
+    private final String horseName;
+    private double horseConfidence;
+    private int horseDistance;
+    private boolean horseFallen;
     
     //Constructor of class Horse
     /**
