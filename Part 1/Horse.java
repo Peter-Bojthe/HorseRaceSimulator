@@ -31,9 +31,13 @@ public class Horse {
     public Horse(char horseSymbol, String horseName, double horseConfidence) {
        this.horseSymbol = horseSymbol;
        this.horseName = horseName;
-       this.horseConfidence = horseConfidence;
        this.horseDistance = 0;
        this.horseFallen = false;
+       if (horseConfidence > 1 || horseConfidence < 0) {
+        this.horseConfidence = 0;
+       } else {
+        this.horseConfidence = horseConfidence;
+       } 
     }
     
     //Horse has fell
@@ -78,6 +82,10 @@ public class Horse {
 
     // Set confidence of horse to new value 0-1
     public void setConfidence(double newConfidence) {
+        if (newConfidence > 1 || newConfidence < 0) {
+            System.out.println("Horse Confidence Must Be Between 0-1.");
+            return;
+        }
         this.horseConfidence = newConfidence;
     }
     
