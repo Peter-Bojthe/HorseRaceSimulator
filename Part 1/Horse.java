@@ -9,17 +9,17 @@
  * Winning increases confidence, falling decreases it.
  * 
  * @author Peter Bojthe 
- * @version 16/03/25
+ * @version 17/03/25
  */
 
-public class Horse {
+ class Horse {
     //Fields of class Horse
     private char horseSymbol;
     private final String horseName;
     private double horseConfidence;
     private int horseDistance;
     private boolean horseFallen;
-    
+
     //Constructor of class Horse
     /**
      * Constructor for objects of class Horse
@@ -33,43 +33,45 @@ public class Horse {
        this.horseName = horseName;
        this.horseDistance = 0;
        this.horseFallen = false;
-       if (horseConfidence > 1 || horseConfidence < 0) {
+       if (horseConfidence > 1) {
+        this.horseConfidence = 1;
+       } else if (horseConfidence < 0) {
         this.horseConfidence = 0;
        } else {
-        this.horseConfidence = horseConfidence;
-       } 
+           this.horseConfidence = horseConfidence;
+       }
     }
-    
+
     //Horse has fell
     public void fall() {
         this.horseFallen = true;
     }
-    
+
     // Get the confidence of horse
     public double getConfidence() {
         return this.horseConfidence;
     }
-    
+
     // Get the distance of horse
     public int getDistanceTravelled() {
         return this.horseDistance;
     }
-    
+
     // Get the name of horse
     public String getName() {
         return this.horseName;
     }
-    
+
     // Get the symbol of horse
     public char getSymbol() {
         return this.horseSymbol;
     }
-    
+
     // Set the position to default
     public void goBackToStart() {
         this.horseDistance = 0;
     }
-    
+
     // Set the horse to fallen
     public boolean hasFallen() {
         return this.horseFallen;
@@ -82,13 +84,18 @@ public class Horse {
 
     // Set confidence of horse to new value 0-1
     public void setConfidence(double newConfidence) {
-        if (newConfidence > 1 || newConfidence < 0) {
+        if (newConfidence > 1) {
             System.out.println("Horse Confidence Must Be Between 0-1.");
+            this.horseConfidence = 1;
+            return;
+        } else if (newConfidence < 0) {
+            System.out.println("Horse Confidence Must Be Between 0-1.");
+            this.horseConfidence = 0;
             return;
         }
         this.horseConfidence = newConfidence;
     }
-    
+
     // Set symbol of the horse to new character
     public void setSymbol(char newSymbol) {
         this.horseSymbol = newSymbol;
