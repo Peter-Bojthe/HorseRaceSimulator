@@ -70,6 +70,7 @@
     // Set the position to default
     public void goBackToStart() {
         this.horseDistance = 0;
+        this.horseFallen = false;
     }
 
     // Set the horse to fallen
