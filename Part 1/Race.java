@@ -51,32 +51,25 @@ class Race {
         boolean finished = false;
 
         // Directly initialize the class-level variables
-        horses.add(new Horse('1', "Horse 1", 0.1));
-        horses.add(new Horse('2', "Horse 2", 0.10));
-        horses.add(new Horse('3', "Horse 3", 0.15));
+        horses.add(0, new Horse('1', "Horse 1", 0.1));
+        horses.add(1, new Horse('2', "Horse 2", 0.10));
+        horses.add(2, null);
+        horses.add(3, new Horse('3', "Horse 3", 0.15));
 
         // Reset all the lanes (all horses not fallen and back to 0). 
-        for (Horse horse : horses) {
-            horse.goBackToStart();
-        }
-
+        resetHorsesPosition(horses);
         // Race until one of the horses finishes
         while (!finished) {
             // Move each horse
-            for (Horse horse : horses) {
-                moveHorse(horse);
-            }
-
+            moveAllHorses(horses);
             // Print the race positions
             printRace();
-
             // If any of the three horses has won, the race is finished
             // If all horses fell, race is over.
             finished = raceFinished(horses);
-
             // Wait for 100 milliseconds
             try {
-                TimeUnit.MILLISECONDS.sleep(250);
+                TimeUnit.MILLISECONDS.sleep(125);
             } catch (InterruptedException e) {}
         }
         showWinner(horses);
@@ -84,6 +77,7 @@ class Race {
 
     private void showWinner(ArrayList<Horse> horses) {
         for (Horse horse : horses) {
+            if (horse == null) continue;
             if (raceWonBy(horse)) {
                 System.out.println(horse.getName()+" has won the Race");
                 horse.setConfidence(horse.getConfidence()*1.1);
@@ -93,16 +87,32 @@ class Race {
         }
     }
 
+    private void moveAllHorses(ArrayList<Horse> horses) {
+        for (Horse horse : horses) {
+            if (horse == null) continue;
+            moveHorse(horse);
+        }
+    }
+
+    private void resetHorsesPosition(ArrayList<Horse> horses) {
+        for (Horse horse : horses) {
+            if (horse == null) continue;
+            horse.goBackToStart();
+        }
+    }
+
     /**
      * Check if the race is Over
-     * All horse fell
-     * A horse has finished the race.
+     * All horses have  fell
+     * Or a horse has finished the race.
+     * @param horses check all horses to see if any have won
+     * have a boolean flag to check if all of them have fell or not.
      * 
      */
     private boolean raceFinished(ArrayList<Horse> horses) {
-        boolean finished = false;
         boolean allFell = true;
         for (Horse horse : horses) {
+            if (horse == null) continue;
             if (raceWonBy(horse)) {
                 return true;
             }
@@ -110,10 +120,7 @@ class Race {
                 allFell = false;
             }
         }
-        if (allFell) {
-            finished = true;
-        }
-        return finished;
+        return allFell;
     }
 
     /**
@@ -149,6 +156,7 @@ class Race {
 
     /***
      * Print the race on the terminal
+     * Horse index in array matches the lane No.
      */
     private void printRace() {
         System.out.print('\u000C');  // Clear the terminal window
@@ -156,22 +164,18 @@ class Race {
         multiplePrint('=', raceLength + 3); // Top edge of track
         System.out.println();
 
-        // printLane(lane1Horse);
-        // System.out.println();
-
-        // printLane(lane2Horse);
-        // System.out.println();
-
-        // printLane(lane3Horse);
-        // System.out.println();
-
-        for (Horse horse : horses) {
-            printLane(horse);
-            System.out.println();
-        }
+        printAllLanes(horses);
 
         multiplePrint('=', raceLength + 3); // Bottom edge of track
         System.out.println();    
+    }
+
+    private void printAllLanes(ArrayList<Horse> horses) {
+        for (Horse horse : horses) {
+            //if (horse == null) continue;
+            printLane(horse);
+            System.out.println();
+        }
     }
 
     /**
@@ -181,27 +185,34 @@ class Race {
      * to show how far the horse has run
      */
     private void printLane(Horse theHorse) {
-        // Calculate how many spaces are needed before and after the horse
-        int spacesBefore = theHorse.getDistanceTravelled();
-        int spacesAfter = raceLength - theHorse.getDistanceTravelled();
-
-        System.out.print('|');
-
-        // Print spaces before the horse
-        multiplePrint(' ', spacesBefore);
-
-        // If the horse has fallen, print a fallen symbol; else print the horse's symbol
-        if (theHorse.hasFallen()) {
-            System.out.print('\u274C');  // Unicode for fallen symbol '\u2322'
+        if (theHorse == null) {
+            System.out.print('|');
+            multiplePrint(' ', raceLength+1);
+            System.out.print('|');
+            System.out.print(" Empty Lane");
         } else {
-            System.out.print(theHorse.getSymbol());
+            // Calculate how many spaces are needed before and after the horse
+            int spacesBefore = theHorse.getDistanceTravelled();
+            int spacesAfter = raceLength - theHorse.getDistanceTravelled();
+
+            System.out.print('|');
+
+            // Print spaces before the horse
+            multiplePrint(' ', spacesBefore);
+
+            // If the horse has fallen, print a fallen symbol; else print the horse's symbol
+            if (theHorse.hasFallen()) {
+                System.out.print('\u274C');  // Unicode for fallen symbol '\u2322'
+            } else {
+                System.out.print(theHorse.getSymbol());
+            }
+
+            // Print spaces after the horse
+            multiplePrint(' ', spacesAfter);
+
+            System.out.print('|');
+            System.out.print(" "+theHorse.getName()+" (Current Confidence "+theHorse.getConfidence()+")");
         }
-
-        // Print spaces after the horse
-        multiplePrint(' ', spacesAfter);
-
-        System.out.print('|');
-        System.out.print(" "+theHorse.getName()+" (Current Confidence "+theHorse.getConfidence()+")");
     }
 
     /***
