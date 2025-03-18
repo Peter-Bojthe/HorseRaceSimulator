@@ -1,6 +1,6 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * A three-horse race, each horse running in its own lane
@@ -51,31 +51,99 @@ class Race {
         boolean finished = false;
 
         // Directly initialize the class-level variables
-        horses.add(0, new Horse('1', "Horse 1", 0.1));
-        horses.add(1, new Horse('2', "Horse 2", 0.10));
-        horses.add(2, null);
-        horses.add(3, new Horse('3', "Horse 3", 0.15));
+        // horses.add(0, new Horse('1', "Horse 1", 0.45));
+        // horses.add(1, new Horse('2', "Horse 2", 0.5));
+        // horses.add(2, null);
+        // horses.add(4, new Horse('3', "Horse 3", 0.5));
+
+        createHorses();
 
         // Reset all the lanes (all horses not fallen and back to 0). 
-        resetHorsesPosition(horses);
+        resetHorsesPosition();
         // Race until one of the horses finishes
         while (!finished) {
             // Move each horse
-            moveAllHorses(horses);
+            moveAllHorses();
             // Print the race positions
             printRace();
             // If any of the three horses has won, the race is finished
             // If all horses fell, race is over.
-            finished = raceFinished(horses);
+            finished = raceFinished();
             // Wait for 100 milliseconds
             try {
                 TimeUnit.MILLISECONDS.sleep(125);
             } catch (InterruptedException e) {}
         }
-        showWinner(horses);
+        showWinner();
+    }
+    private void createHorses() {
+        int input = numberInput("How many lanes: ");
+        System.out.println("done.");
+        for (int i = 0; i < input; i++) {
+            if (moreHorses(i)) {
+                String name = inputString("Horse Name: ");
+                char character = inputCharacter("Horse Character: ");
+                horses.add(i, new Horse(character, name, 0.25));
+            } else {
+                horses.add(i, null);
+            }
+        }
     }
 
-    private void showWinner(ArrayList<Horse> horses) {
+    private boolean checkCharacter(String input) {
+        return (input.length() != 0);
+    }
+
+    private char inputCharacter(String statement) {
+        String input = inputString(statement);
+        boolean valid = checkCharacter(input);
+        while (!valid) {
+            input = inputString(statement);
+            valid = checkCharacter(input);
+        }
+        return input.charAt(0);
+    }
+
+    private boolean checkNumber(String input) {
+        if (input.length() == 0) return false;
+        for (int i = 0; i < input.length(); i++) {
+            char x = input.charAt(i);
+            if (x < '0' || x > '9') return false;
+        }
+        return (Integer.parseInt(input) >= 0 || Integer.parseInt(input) <= 8);
+    }
+
+    private int numberInput(String statement) {
+        String input = inputString(statement);
+        boolean valid = checkNumber(input);
+        while (!valid) {
+            input = inputString(statement);
+            valid = checkNumber(input);
+        }
+        return Integer.parseInt(input);
+    }
+
+    private String inputString(String statement) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println(statement);
+        return scanner.nextLine();
+    }
+
+    private boolean yesNo(String input) {
+        return (input.equals("1") || input.equals("0"));
+    }
+
+    private boolean moreHorses(int index) {
+        String input = inputString("Add horse to lane "+index+": yes [1], no [0]: ");
+        boolean valid = yesNo(input);
+        while (!valid) {
+            input = inputString("Add horse to lane "+index+": yes [1], no [0]: ");
+            valid = yesNo(input);
+        }
+        return input.equals("1");
+    }
+
+    private void showWinner() {
         for (Horse horse : horses) {
             if (horse == null) continue;
             if (raceWonBy(horse)) {
@@ -87,14 +155,14 @@ class Race {
         }
     }
 
-    private void moveAllHorses(ArrayList<Horse> horses) {
+    private void moveAllHorses() {
         for (Horse horse : horses) {
             if (horse == null) continue;
             moveHorse(horse);
         }
     }
 
-    private void resetHorsesPosition(ArrayList<Horse> horses) {
+    private void resetHorsesPosition() {
         for (Horse horse : horses) {
             if (horse == null) continue;
             horse.goBackToStart();
@@ -109,7 +177,7 @@ class Race {
      * have a boolean flag to check if all of them have fell or not.
      * 
      */
-    private boolean raceFinished(ArrayList<Horse> horses) {
+    private boolean raceFinished() {
         boolean allFell = true;
         for (Horse horse : horses) {
             if (horse == null) continue;
@@ -164,13 +232,13 @@ class Race {
         multiplePrint('=', raceLength + 3); // Top edge of track
         System.out.println();
 
-        printAllLanes(horses);
+        printAllLanes();
 
         multiplePrint('=', raceLength + 3); // Bottom edge of track
         System.out.println();    
     }
 
-    private void printAllLanes(ArrayList<Horse> horses) {
+    private void printAllLanes() {
         for (Horse horse : horses) {
             //if (horse == null) continue;
             printLane(horse);
@@ -202,7 +270,7 @@ class Race {
 
             // If the horse has fallen, print a fallen symbol; else print the horse's symbol
             if (theHorse.hasFallen()) {
-                System.out.print('\u274C');  // Unicode for fallen symbol '\u2322'
+                System.out.print('\u2322');  // Unicode for fallen symbol
             } else {
                 System.out.print(theHorse.getSymbol());
             }
