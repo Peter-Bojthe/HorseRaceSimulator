@@ -20,6 +20,7 @@
     private int horseDistance;
     private boolean horseFallen;
     private int laneNumber;
+    static int horseCounter;
 
     //Constructor of class Horse
     /**
@@ -42,6 +43,7 @@
        } else {
            this.horseConfidence = horseConfidence;
        }
+       horseCounter++;
     }
 
     //Horse has fell

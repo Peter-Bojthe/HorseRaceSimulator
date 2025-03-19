@@ -19,12 +19,39 @@ public class UserInput {
         return input;
     }
 
-    public static int amountOfLanes(String statement) {
+    public static int choseLaneWithLimit(String statement, int limit) {
+        int input = numberInput(statement);
+        while (input < 1  || input > limit) {
+            System.out.println("Invalid index for lane.");
+            input = numberInput(statement);
+        }
+        return input;
+    }
+
+    public static int choiceOfAllLanes(String statement) {
         int input = numberInput(statement);
         while (input < 1 || input > 8) {
             input = numberInput(statement);
         }
         return input;
+    }
+    public static int pickNumberOfLanes(String statement) {
+        System.out.println("Number of lanes must be greater than 2 to start race simulation.");
+        int input = numberInput(statement);
+        while (input < 2 || input > 8) {
+            input = numberInput(statement);
+        }
+        return input;
+    }
+
+    public static int pickNumberOfHorses(String statement, int limit) {
+        System.out.println("You must choose maximum "+limit+" horses to fit your lanes.");
+        System.out.println("The minimum number of horses is 2");
+        int number = numberInput(statement);
+        while (number > limit || number < 2) {
+            number = numberInput(statement);
+        }
+        return number;
     }
 
     private static boolean checkCharacter(String input) {
