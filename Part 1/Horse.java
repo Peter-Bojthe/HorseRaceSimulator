@@ -106,7 +106,7 @@
             this.horseConfidence = 0;
             return;
         }
-        this.horseConfidence = newConfidence;
+        this.horseConfidence = Math.round(newConfidence*Math.pow(10, 3)) / Math.pow(10, 3);
     }
 
     // Set symbol of the horse to new character

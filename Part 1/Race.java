@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  */
 class Race {
     private int raceLength;
-    ArrayList<Horse> horses = new ArrayList<>();
+    static ArrayList<Horse> horses = new ArrayList<>();
 
     /**
      * Constructor for objects of class Race
@@ -72,24 +72,31 @@ class Race {
                 } catch (InterruptedException e) {}
             }
             showWinner();
+            showRaceDetails();
+
             finishedSimulation = UserInput.playAgain();
             if (!finishedSimulation) {
-                changeRaceDetails();
+                finishedRace = false;
+                resetHorsesPosition();
+                //changeRaceDetails();
             }
         }
     }
 
     private void showRaceDetails() {
-        System.out.println("Current length of the race: "+raceLength);
+        System.out.println("\nCurrent length of the race: "+raceLength);
         System.out.println("Current number of lanes: "+horses.size());
         for (Horse horse : horses) {
+            if (horse == null) continue;
             System.out.print(horse.getName()+" is in lane "+horse.getLaneNumber());
             System.out.println(", Confidenece: "+horse.getConfidence());
         }
+        System.out.println();
     }
 
     private void changeRaceDetails() {
         showRaceDetails();
+        
     }
 
     // If there is only 1 lane it cannot be empty.
@@ -100,7 +107,7 @@ class Race {
             if (UserInput.moreHorses(i+1)) {
                 String name = UserInput.inputString("Horse Name: ");
                 char character = UserInput.inputCharacter("Horse Character: ");
-                horses.add(i, new Horse(character, name, 0.1, i));
+                horses.add(i, new Horse(character, name, 0.1, i+1));
             } else {
                 horses.add(i, null);
             }
@@ -243,7 +250,8 @@ class Race {
             multiplePrint(' ', spacesAfter);
 
             System.out.print('|');
-            System.out.print(" "+theHorse.getName()+" (Current Confidence "+theHorse.getConfidence()+")");
+            System.out.print(" Lane: "+theHorse.getLaneNumber());
+            System.out.print(", "+theHorse.getName()+" (Current Confidence "+theHorse.getConfidence()+")");
         }
     }
 
