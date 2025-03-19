@@ -1,11 +1,11 @@
 import java.util.Scanner;
 
 public class UserInput {
-    public static boolean playAgain() {
-        String input = inputString("Exit: yes [1], no [0]: ");
+    public static boolean askYesNo(String statement) {
+        String input = inputString(statement);
         boolean valid = yesNo(input);
         while (!valid) {
-            input = inputString("Exit yes [1], no [0]: ");
+            input = inputString(statement);
             valid = yesNo(input);
         }
         return (input.equals("1"));
@@ -13,16 +13,16 @@ public class UserInput {
 
     public static int trackLength() {
         int input = numberInput("Length of Race [25m, 100m]: ");
-        while (input < 25 || input > 100) {
+        while (input < 3 || input > 100) {
             input = numberInput("Length of Race [25m, 100m]: ");
         }
         return input;
     }
 
-    public static int amountOfLanes() {
-        int input = numberInput("How many lanes [1, 8]: ");
-        while (input <= 0 || input >= 9) {
-            input = numberInput("How many lanes [1, 8]: ");
+    public static int amountOfLanes(String statement) {
+        int input = numberInput(statement);
+        while (input < 1 || input > 8) {
+            input = numberInput(statement);
         }
         return input;
     }
@@ -69,15 +69,5 @@ public class UserInput {
 
     private static boolean yesNo(String input) {
         return (input.equals("1") || input.equals("0"));
-    }
-
-    public static boolean moreHorses(int index) {
-        String input = inputString("Add horse to lane "+index+": yes [1], no [0]: ");
-        boolean valid = yesNo(input);
-        while (!valid) {
-            input = inputString("Add horse to lane "+index+": yes [1], no [0]: ");
-            valid = yesNo(input);
-        }
-        return input.equals("1");
     }
 }
