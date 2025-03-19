@@ -4,12 +4,12 @@
  * 
  * 
  * @author Peter Bojthe 
- * @version 18/03/25
+ * @version 19/03/25
  */
 
 public class HorseRaceSimulator {
     public static void main(String[] args) {
-        Race race = new Race(50);
+        Race race = new Race();
         race.startRace();
     }
 }

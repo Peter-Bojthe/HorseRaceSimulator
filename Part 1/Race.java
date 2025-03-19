@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -7,10 +6,10 @@ import java.util.concurrent.TimeUnit;
  * for a given distance
  * 
  * @author McRaceface
- * @version 1.1
+ * @version 1.2
  */
 class Race {
-    private final int raceLength;
+    private int raceLength;
     ArrayList<Horse> horses = new ArrayList<>();
 
     /**
@@ -19,9 +18,9 @@ class Race {
      * 
      * @param distance the length of the racetrack (in meters/units...)
      */
-    public Race(int distance) {
+    public Race() {
         // Initialize instance variables
-        raceLength = distance;
+        //raceLength = distance;
     }
 
     /**
@@ -47,100 +46,65 @@ class Race {
      * race is finished
      */
     public void startRace() {
+        // Declare local variable to tell us when simulation is finished
+        boolean finishedSimulation = false;
         // Declare a local variable to tell us when the race is finished
-        boolean finished = false;
-
-        // Directly initialize the class-level variables
-        // horses.add(0, new Horse('1', "Horse 1", 0.45));
-        // horses.add(1, new Horse('2', "Horse 2", 0.5));
-        // horses.add(2, null);
-        // horses.add(4, new Horse('3', "Horse 3", 0.5));
-
+        boolean finishedRace = false;
+        // Let user decide the length of the race
+        raceLength = UserInput.trackLength();
+        // Create Horses to start simulation
         createHorses();
-
         // Reset all the lanes (all horses not fallen and back to 0). 
         resetHorsesPosition();
-        // Race until one of the horses finishes
-        while (!finished) {
-            // Move each horse
-            moveAllHorses();
-            // Print the race positions
-            printRace();
-            // If any of the three horses has won, the race is finished
-            // If all horses fell, race is over.
-            finished = raceFinished();
-            // Wait for 100 milliseconds
-            try {
-                TimeUnit.MILLISECONDS.sleep(125);
-            } catch (InterruptedException e) {}
-        }
-        showWinner();
-    }
-    private void createHorses() {
-        int input = numberInput("How many lanes: ");
-        System.out.println("done.");
-        for (int i = 0; i < input; i++) {
-            if (moreHorses(i)) {
-                String name = inputString("Horse Name: ");
-                char character = inputCharacter("Horse Character: ");
-                horses.add(i, new Horse(character, name, 0.25));
-            } else {
-                horses.add(i, null);
+
+        while (!finishedSimulation) {
+            while (!finishedRace) {
+                // Move each horse
+                moveAllHorses();
+                // Print the race positions
+                printRace();
+                // If any of the three horses has won, the race is finished
+                // If all horses fell, race is over.
+                finishedRace = raceFinished();
+                // Wait for 100 milliseconds
+                try {
+                    TimeUnit.MILLISECONDS.sleep(125);
+                } catch (InterruptedException e) {}
+            }
+            showWinner();
+            finishedSimulation = UserInput.playAgain();
+            if (!finishedSimulation) {
+                changeRaceDetails();
             }
         }
     }
 
-    private boolean checkCharacter(String input) {
-        return (input.length() != 0);
-    }
-
-    private char inputCharacter(String statement) {
-        String input = inputString(statement);
-        boolean valid = checkCharacter(input);
-        while (!valid) {
-            input = inputString(statement);
-            valid = checkCharacter(input);
+    private void showRaceDetails() {
+        System.out.println("Current length of the race: "+raceLength);
+        System.out.println("Current number of lanes: "+horses.size());
+        for (Horse horse : horses) {
+            System.out.print(horse.getName()+" is in lane "+horse.getLaneNumber());
+            System.out.println(", Confidenece: "+horse.getConfidence());
         }
-        return input.charAt(0);
     }
 
-    private boolean checkNumber(String input) {
-        if (input.length() == 0) return false;
-        for (int i = 0; i < input.length(); i++) {
-            char x = input.charAt(i);
-            if (x < '0' || x > '9') return false;
+    private void changeRaceDetails() {
+        showRaceDetails();
+    }
+
+    // If there is only 1 lane it cannot be empty.
+    private void createHorses() {
+        horses.clear();
+        int input = UserInput.amountOfLanes();
+        for (int i = 0; i < input; i++) {
+            if (UserInput.moreHorses(i+1)) {
+                String name = UserInput.inputString("Horse Name: ");
+                char character = UserInput.inputCharacter("Horse Character: ");
+                horses.add(i, new Horse(character, name, 0.1, i));
+            } else {
+                horses.add(i, null);
+            }
         }
-        return (Integer.parseInt(input) >= 0 || Integer.parseInt(input) <= 8);
-    }
-
-    private int numberInput(String statement) {
-        String input = inputString(statement);
-        boolean valid = checkNumber(input);
-        while (!valid) {
-            input = inputString(statement);
-            valid = checkNumber(input);
-        }
-        return Integer.parseInt(input);
-    }
-
-    private String inputString(String statement) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println(statement);
-        return scanner.nextLine();
-    }
-
-    private boolean yesNo(String input) {
-        return (input.equals("1") || input.equals("0"));
-    }
-
-    private boolean moreHorses(int index) {
-        String input = inputString("Add horse to lane "+index+": yes [1], no [0]: ");
-        boolean valid = yesNo(input);
-        while (!valid) {
-            input = inputString("Add horse to lane "+index+": yes [1], no [0]: ");
-            valid = yesNo(input);
-        }
-        return input.equals("1");
     }
 
     private void showWinner() {

@@ -19,6 +19,7 @@
     private double horseConfidence;
     private int horseDistance;
     private boolean horseFallen;
+    private int laneNumber;
 
     //Constructor of class Horse
     /**
@@ -28,11 +29,12 @@
      * Give Confidence
      * Set Distance and Fallen to deafult
      */
-    public Horse(char horseSymbol, String horseName, double horseConfidence) {
+    public Horse(char horseSymbol, String horseName, double horseConfidence, int laneNumber) {
        this.horseSymbol = horseSymbol;
        this.horseName = horseName;
        this.horseDistance = 0;
        this.horseFallen = false;
+       this.laneNumber = laneNumber;
        if (horseConfidence > 1) {
         this.horseConfidence = 1;
        } else if (horseConfidence < 0) {
@@ -45,6 +47,16 @@
     //Horse has fell
     public void fall() {
         this.horseFallen = true;
+    }
+
+    // Get the lane number of horse
+    public int getLaneNumber() {
+        return this.laneNumber;
+    }
+
+    // Set lane number of horse
+    public void setLaneNumber(int newLane) {
+        this.laneNumber = newLane;
     }
 
     // Get the confidence of horse
