@@ -1,7 +1,21 @@
 import java.util.Scanner;
 
+/**
+ * Class to handle User input
+ * 
+ * @author Peter Bojthe
+ * @version 23/03/25
+ * 
+ */
+
 public class UserInput implements UserOptionInterface, UserInputInterface {
 
+    /**
+     * Prompts the user for a number input and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated integer input from the user.
+     */
     @Override
     public int inputNumber(String statement) {
         String input = inputString(statement);
@@ -13,6 +27,12 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return Integer.parseInt(input);
     }
 
+    /**
+     * Prompts the user for a character input and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated character input from the user.
+     */
     @Override
     public char inputCharacter(String statement) {
         String input = inputString(statement);
@@ -24,6 +44,12 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return input.charAt(0);
     }
 
+    /**
+     * Prompts the user for a string input.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the string input from the user.
+     */
     @Override
     public String inputString(String statement) {
         @SuppressWarnings("resource") // Resource Leak: scanner never closed
@@ -32,6 +58,12 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return scanner.nextLine();
     }
 
+    /**
+     * Validates if the input string is a valid number.
+     * 
+     * @param input the string to validate.
+     * @return true if the input is a valid number, false otherwise.
+     */
     @Override
     public boolean validateNumber(String input) {
         if (input.length() == 0) return false;
@@ -42,11 +74,23 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return true;
     }
 
+    /**
+     * Validates if the input string is a valid character.
+     * 
+     * @param input the string to validate.
+     * @return true if the input is a valid character, false otherwise.
+     */
     @Override
     public boolean validateCharacter(String input) {
         return (input.length() != 0);
     }
 
+    /**
+     * Prompts the user for a yes/no input and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return true if the user input is "1" (yes), false if "2" (no).
+     */
     @Override
     public boolean askYesNo(String statement) {
         String input = inputString(statement);
@@ -58,11 +102,23 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return (input.equals("1"));
     }
 
+    /**
+     * Validates if the input is a valid yes/no response.
+     * 
+     * @param input the string to validate.
+     * @return true if the input is "1" or "2", false otherwise.
+     */
     @Override
     public boolean yesNo(String input) {
-        return input.equals("1") || input.equals("2");
+        return (input.equals("1") || input.equals("0"));
     }
 
+    /**
+     * Prompts the user to choose a track length and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated track length input from the user.
+     */
     @Override
     public int chooseTrackLength(String statement) {
         int input = inputNumber(statement);
@@ -72,16 +128,28 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return input;
     }
 
+    /**
+     * Prompts the user to pick a lane and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated lane number input from the user.
+     */
     @Override
-    public int pickOneOfTheLanes(String statement) {
+    public int pickOneOfTheLanes(String statement, int max) {
         int input = inputNumber(statement);
-        while (input < 1  || input > 8) {
+        while (input < 1  || input > max) {
             System.out.println("Invalid index for lane.");
             input = inputNumber(statement);
         }
         return input;
     }
 
+    /**
+     * Prompts the user to choose the number of lanes and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated number of lanes input from the user.
+     */
     @Override
     public int chooseNumberOfLanes(String statement) {
         System.out.println("Number of lanes must be greater than 2 to start race simulation.");
@@ -93,6 +161,12 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return input;
     }
 
+    /**
+     * Prompts the user to choose the number of horses and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated number of horses input from the user.
+     */
     @Override
     public int chooseNumberOfHorses(String statement) {
         int input = inputNumber(statement);
@@ -103,6 +177,13 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return input;
     }
 
+    /**
+     * Prompts the user to choose the number of horses given a specific number of lanes and validates it.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @param numberOfLanes the number of lanes available.
+     * @return the validated number of horses input from the user.
+     */
     @Override
     public int chooseNumberOfHorsesGivenNumberOfLanes(String statement, int numberOfLanes) {
         int input = inputNumber(statement);
