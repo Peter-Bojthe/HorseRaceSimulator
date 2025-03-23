@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  * @author McRaceface
  * @version 1.2
  */
-class Race {
+class Race extends UserInput {
     private int raceLength;
     static ArrayList<Horse> horses = new ArrayList<>();
 
@@ -52,7 +52,7 @@ class Race {
         // Declare a local variable to tell us when the race is finished
         boolean finishedRace = false;
         // Let user decide the length of the race
-        raceLength = UserInput.trackLength();
+        raceLength = chooseTrackLength("Length of Race [25m, 100m]: ");
         // Create Horses to start simulation
         createHorses();
         // Reset all the lanes (all horses not fallen and back to 0). 
@@ -69,17 +69,17 @@ class Race {
                 finishedRace = raceFinished();
                 // Wait for 125 milliseconds
                 try {
-                    TimeUnit.MILLISECONDS.sleep(125);
+                    TimeUnit.MILLISECONDS.sleep(50);
                 } catch (InterruptedException e) {}
             }
             showWinner();
             resetHorsesPosition();
             showRaceDetails();
 
-            finishedSimulation = UserInput.askYesNo("STOP SIMULATION:  yes [1] no [0]: ");
+            finishedSimulation = askYesNo("STOP SIMULATION:  yes [1] no [0]: ");
             if (!finishedSimulation) {
                 finishedRace = false;
-                if (UserInput.askYesNo("Would you like to make changes to the next simulation yes [1], no [0]: ")) {
+                if (askYesNo("Would you like to make changes to the next simulation yes [1], no [0]: ")) {
                     changeRaceDetails();
                 }
             }
@@ -103,12 +103,12 @@ class Race {
     // change the length of race
     //
     private void changeRaceDetails() {
-        if (UserInput.askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) removeLanes();
-        if (UserInput.askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) addLanes();
-        if (UserInput.askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) removeHorses();
-        if (UserInput.askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) addHorses();
-        // if (UserInput.askYesNo("Would you like to chage the length of the race yes [1], no [0]: ")) {
-        //     raceLength = UserInput.trackLength();
+        if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) removeLanes();
+        if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) addLanes();
+        if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) removeHorses();
+        if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) addHorses();
+        // if (askYesNo("Would you like to chage the length of the race yes [1], no [0]: ")) {
+        //     raceLength = trackLength();
         // }
     }
 
@@ -117,7 +117,7 @@ class Race {
         boolean done = false;
         while (horses.size() <= 8 && !done) {
             System.out.println("There are currently "+horses.size()+" lanes.");
-            done = UserInput.askYesNo("Would you like to add a lane yes [1], no [0]");
+            done = askYesNo("Would you like to add a lane yes [1], no [0]");
             if (done) {
                 horses.add(null);
                 done = false;
@@ -133,7 +133,7 @@ class Race {
         while (horses.size() > 2 && !done) {
             System.out.println("There are currently "+horses.size()+" lanes.");
             System.out.println("The number of lanes cannot be less than 2");
-            int input = UserInput.choiceOfAllLanes("Enter the lane number you want to remove: ");
+            int input = pickOneOfTheLanes("Enter the lane number you want to remove: ");
             if (input-1 > horses.size()) {
                 System.out.println("Invalid Choice of Lane");
             } else {
@@ -145,7 +145,7 @@ class Race {
                     System.out.println("The number of lanes is now 2, cannot remove more.");
                     return;
                 }
-                done = UserInput.askYesNo("Stop removing Lanes yes [1], no [0]");
+                done = askYesNo("Stop removing Lanes yes [1], no [0]");
             }
         }
         addHorsesToLanes();
@@ -155,13 +155,13 @@ class Race {
         boolean done = false;
         while (horseLanes() >= 2  && !done) {
             showFullLanes();
-            int input = UserInput.choiceOfAllLanes("Enter the lane number of the horse you want to remove: ");
+            int input = pickOneOfTheLanes("Enter the lane number of the horse you want to remove: ");
             if (input-1 > horses.size() || horses.get(input-1) == null) {
                 System.out.println("Invalid Choice of Lane.");
             } else {
                 horses.set(input-1, null);
                 Horse.horseCounter--;
-                done = UserInput.askYesNo("Stop removing horses yes [1], no [0]: ");
+                done = askYesNo("Stop removing horses yes [1], no [0]: ");
             }
         }
     }
@@ -186,13 +186,13 @@ class Race {
         boolean done = false;
         while (!fullLanes() && !done) {
             showEmptyLanes();
-            int input = UserInput.choiceOfAllLanes("Enter the lane number you want to add a horse to: ");
+            int input = pickOneOfTheLanes("Enter the lane number you want to add a horse to: ");
             if (input-1 > horses.size() || horses.get(input-1) != null) {
                 System.out.println("Invalid Lane or Taken Lane.");
             } else {
                 horses.set(input-1, createHorse(input));
                 Horse.horseCounter++;
-                done = UserInput.askYesNo("Stop adding horses yes [1], no [0]: "); 
+                done = askYesNo("Stop adding horses yes [1], no [0]: "); 
             }
         }
     }
@@ -222,17 +222,17 @@ class Race {
     }
 
     private Horse createHorse(int lane) {
-        String name = UserInput.inputString("Horse Name: ");
-        char character = UserInput.inputCharacter("Horse Character: ");
+        String name = inputString("Horse Name: ");
+        char character = inputCharacter("Horse Character: ");
         return new Horse(character, name, 0.25, lane);
     }
 
     // If there is only 1 lane it cannot be empty.
     // private void createHorses() {
     //     horses.clear();
-    //     int input = UserInput.pickNumberOfLanes("How many lanes [2, 8]: ");
+    //     int input = pickNumberOfLanes("How many lanes [2, 8]: ");
     //     for (int i = 0; i < input; i++) {
-    //         if (UserInput.askYesNo("Add horse to lane "+String.valueOf(i+1)+": yes [1], no [0]: ")) {
+    //         if (askYesNo("Add horse to lane "+String.valueOf(i+1)+": yes [1], no [0]: ")) {
     //             horses.add(i, createHorse(i+1));
     //         } else {
     //             horses.add(i, null);
@@ -242,16 +242,16 @@ class Race {
 
     private void createHorses() {
         horses.clear();
-        int inputLanes = UserInput.pickNumberOfLanes("How many lanes would ou like [2, 8]: ");
+        int inputLanes = chooseNumberOfLanes("How many lanes would ou like [2, 8]: ");
         for (int numberOfLanes = 0; numberOfLanes < inputLanes; numberOfLanes++) {
             horses.add(numberOfLanes, null);
         }
-        int inputHorses = UserInput.pickNumberOfHorses("How many horses would you like: ", inputLanes);
+        int inputHorses = chooseNumberOfHorsesGivenNumberOfLanes("How many horses would you like: ", inputLanes);
         for (int numberOfHorses = 0; numberOfHorses < inputHorses; numberOfHorses++) {
-            int lane = UserInput.choseLaneWithLimit("Which lane do you want to add this horse to: ", inputLanes);
+            int lane = chooseNumberOfHorsesGivenNumberOfLanes("Which lane do you want to add this horse to: ", inputLanes);
             while (horses.get(lane-1) != null) {
                 System.out.println("Lane is taken by another horse.");
-                lane = UserInput.choseLaneWithLimit("Which lane do you want to add this horse to: ", inputLanes);
+                lane = chooseNumberOfHorsesGivenNumberOfLanes("Which lane do you want to add this horse to: ", inputLanes);
             }
             horses.set(lane-1, createHorse(lane));
         }
