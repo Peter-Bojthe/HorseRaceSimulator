@@ -128,6 +128,23 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return input;
     }
 
+    /*
+     * 
+     * 
+     * 
+     * 
+     * 
+     */
+    @Override
+    public int pickAnyHorse(String statement) {
+        int input = inputNumber(statement);
+        while (input < 1  || input > 8) {
+            System.out.println("Invalid index for lane.");
+            input = inputNumber(statement);
+        }
+        return input;
+    }
+
     /**
      * Prompts the user to pick a lane and validates it.
      * 

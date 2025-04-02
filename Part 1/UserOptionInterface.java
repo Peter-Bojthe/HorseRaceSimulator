@@ -43,6 +43,16 @@ interface UserOptionInterface {
      */
     public int chooseNumberOfLanes(String statement);
 
+
+    /**
+     * Prompts the user to choose any of the horses.
+     * Should be used for picking a specific horse.
+     *
+     * @param statement the prompt message to display to the user.
+     * @return the validated horse lane number from the user.
+     */
+    public int pickAnyHorse(String statement);
+
     /**
      * Prompts the user to choose the number of horses for the race and validates the input.
      * The number of horses must be within a valid range (e.g., 2 to 8 horses).

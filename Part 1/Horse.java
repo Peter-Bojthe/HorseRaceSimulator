@@ -9,13 +9,18 @@
  */
 
 class Horse {
-    // Fields of class Horse
+    // Fields of Horse
     private char horseSymbol;          // The character symbol representing the horse
     private final String horseName;    // The name of the horse
     private double horseConfidence;    // The confidence rating of the horse (0.0 to 1.0)
     private int horseDistance;         // The distance the horse has traveled in the race
     private boolean horseFallen;       // Flag indicating whether the horse has fallen
     private int laneNumber;            // The lane number assigned to the horse
+    private int totalRaces;            // Counter for the total number of races
+    private int totalWins;             // Counter for the number of wins
+    private double winRate;            // total wins divided by the total races
+
+    // Fields of Class Horse
     static int horseCounter;           // Static counter to track the number of horses created
 
     /**
@@ -33,6 +38,8 @@ class Horse {
         this.horseSymbol = horseSymbol;
         this.horseName = horseName;
         this.horseDistance = 0;
+        this.totalRaces = 0;
+        this.totalWins = 0;
         this.horseFallen = false;
         this.laneNumber = laneNumber;
 
@@ -160,5 +167,29 @@ class Horse {
      */
     public void setSymbol(char newSymbol) {
         this.horseSymbol = newSymbol;
+    }
+
+    public int getTotalWins() {
+        return totalWins;
+    }
+
+    public void setTotalWins(int totalWins) {
+        this.totalWins = totalWins;
+    }
+
+    public int getTotalRaces() {
+        return totalRaces;
+    }
+
+    public void setTotalRaces(int totalRaces) {
+        this.totalRaces = totalRaces;
+    }
+
+    public double getWinRate() {
+        return winRate;
+    }
+
+    public void setWinRate(double wins, double total) {
+        this.winRate = wins / total;
     }
 }

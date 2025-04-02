@@ -47,8 +47,9 @@ class Race extends UserInput {
     public void startRace() throws IOException {
         boolean finishedSimulation = false;
         boolean finishedRace = false;
-        raceLength = chooseTrackLength("Length of Race [25m, 100m]: ");
 
+        showHorseDetailsFromFile();
+        raceLength = chooseTrackLength("\nLength of Race [25m, 100m]: ");
         createHorses();
         resetHorsesPosition();
 
@@ -75,6 +76,11 @@ class Race extends UserInput {
         }
     }
 
+    private void showHorseDetailsFromFile() {
+        System.out.println("\n\n\nSaved Horses: ");
+        HorseDetailsFileHandling.printFormattedTable();
+    }
+
     /**
      * Displays the current race details including length, number of lanes, and horses.
      */
@@ -92,14 +98,43 @@ class Race extends UserInput {
 
     /**
      * Allows the user to change race details such as removing or adding lanes, removing or adding horses, and changing the race length.
-     */
-    private void changeRaceDetails() {
+    * @throws IOException 
+    */
+    private void changeRaceDetails() throws IOException {
+        // Change IF to a WHILE later FIX
         if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) removeLanes();
         if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) addLanes();
         if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) removeHorses();
         if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) addHorses();
-        if (askYesNo("Would you like to change the length of the race yes [1], no [0]: ")) {
-            raceLength = chooseTrackLength("Length of Race [25m, 100m]: ");
+        if (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) saveHorse();
+        if (askYesNo("\n\nWould you like to change the length of the race yes [1], no [0]: ")) {
+             raceLength = chooseTrackLength("Length of Race [25m, 100m]: ");
+        }
+    }
+
+    /*
+     * Save a horse details
+     * User choice which one to save
+     */
+    private void saveHorse() throws IOException {
+        showHorseDetails();
+        int pickedHorse = pickAnyHorse("Enter the lane number of the horse you want to save: ");
+        while (horses.get(pickedHorse) == null) {
+            System.out.println("Lane is empty (invalid). ");
+            pickedHorse = pickAnyHorse("Enter the lane number of the horse you want to save: ");
+        }
+        Horse horse = horses.get(pickedHorse);
+        HorseDetailsFileHandling.saveHorseDetails(horse.getName(), horse.getConfidence(), horse.getSymbol(), horse.getTotalWins(), horse.getTotalRaces(), horse.getWinRate());
+        // System.exit(0);
+    }
+
+    /**
+     * Shows the Details of each horse in the race
+     */
+    private void showHorseDetails() {
+        for (Horse horse : horses) {
+            if (horse == null) continue;
+            System.out.println("Lane: "+horse.getLaneNumber()+", "+horse.getName()+" with confidence "+horse.getConfidence());
         }
     }
 
