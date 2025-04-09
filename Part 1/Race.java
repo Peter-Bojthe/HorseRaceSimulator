@@ -49,6 +49,9 @@ class Race extends UserInput {
         boolean finishedRace = false;
 
         showHorseDetailsFromFile();
+        askUserToChooseHorseFromFile();
+        
+
         raceLength = chooseTrackLength("\nLength of Race [25m, 100m]: ");
         createHorses();
         resetHorsesPosition();
@@ -73,6 +76,21 @@ class Race extends UserInput {
                     changeRaceDetails();
                 }
             }
+        }
+    }
+
+    private void askUserToChooseHorseFromFile() throws IOException {
+        int numberOfSavedHorses = HorseDetailsFileHandling.countFileLines();
+        if (numberOfSavedHorses >=1 ) {
+            int input = inputNumber("Enter the row number of the horse you want to use: ");
+            if (input <= 0 || input > numberOfSavedHorses) {
+                System.out.println("Invalid choice of file rows.");
+                input = inputNumber("Enter the row number of the horse you want to use: ");
+            }
+            String[] horseDetails = HorseDetailsFileHandling.getHorseDetails(input);
+            Horse horse = new Horse(horseDetails[0], horseDetails[1], horseDetails[2], horseDetails[3], horseDetails[4], horseDetails[5]);
+            horses.add(horse);
+            System.out.println("This horse will be added to lane 1.");
         }
     }
 
@@ -276,19 +294,20 @@ class Race extends UserInput {
     private Horse createHorse(int lane) {
         String name = inputString("Horse Name: ");
         char character = inputCharacter("Horse Character: ");
-        return new Horse(character, name, 0.25, lane);
+        return new Horse(name, 0.25, character, 0, 0, 0, lane);
     }
 
     /**
      * Initializes the horses and lanes for the race.
      */
     private void createHorses() {
-        horses.clear();
+        //horses.clear();
         int inputLanes = chooseNumberOfLanes("How many lanes would you like [2, 8]: ");
-        for (int numberOfLanes = 0; numberOfLanes < inputLanes; numberOfLanes++) {
+        for (int numberOfLanes = horses.size(); numberOfLanes < inputLanes; numberOfLanes++) {
             horses.add(numberOfLanes, null);
         }
         int inputHorses = chooseNumberOfHorsesGivenNumberOfLanes("How many horses would you like: ", inputLanes);
+        inputHorses = inputHorses - Horse.horseCounter;
         for (int numberOfHorses = 0; numberOfHorses < inputHorses; numberOfHorses++) {
             int lane = pickOneOfTheLanes("Which lane do you want to add this horse to: ", inputLanes);
             while (horses.get(lane-1) != null) {

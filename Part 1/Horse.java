@@ -34,24 +34,54 @@ class Horse {
      * @param horseConfidence the confidence rating of the horse (0.0 to 1.0).
      * @param laneNumber     the lane number assigned to the horse.
      */
-    public Horse(char horseSymbol, String horseName, double horseConfidence, int laneNumber) {
-        this.horseSymbol = horseSymbol;
+    public Horse(String horseName, double horseConfidence, char horseSymbol, int totalWins, int totalRaces, double winRate, int laneNumber) {
         this.horseName = horseName;
-        this.horseDistance = 0;
-        this.totalRaces = 0;
-        this.totalWins = 0;
-        this.horseFallen = false;
-        this.laneNumber = laneNumber;
-
         // Ensure confidence is within the valid range [0.0, 1.0]
-        if (horseConfidence > 1) {
-            this.horseConfidence = 1;
-        } else if (horseConfidence < 0) {
-            this.horseConfidence = 0;
+        if (horseConfidence > 1.0) {
+            this.horseConfidence = 1.0;
+        } else if (horseConfidence < 0.0) {
+            this.horseConfidence = 0.0;
         } else {
             this.horseConfidence = horseConfidence;
         }
+        this.horseSymbol = horseSymbol;
+        this.totalWins = 0;
+        this.totalRaces = 0;
+        this.winRate = 0.0; //calculate
+        this.laneNumber = laneNumber;
 
+        this.horseDistance = 0;
+        this.horseFallen = false;
+        horseCounter++; // Increment the static horse counter
+    }
+
+    /**
+     * 
+     * 
+     *  Horse Details read in from file.
+     * 
+     * */
+
+    public Horse(String horseName, String horseConfidence, String horseSymbol, String totalWins, String totalRaces, String winRate) {
+
+
+        this.horseName = horseName;
+        // Ensure confidence is within the valid range [0.0, 1.0]
+        if (Double.parseDouble(horseConfidence) > 1.0) {
+            this.horseConfidence = 1.0;
+        } else if (Double.parseDouble(horseConfidence) < 0.0) {
+            this.horseConfidence = 0.0;
+        } else {
+            this.horseConfidence = Double.parseDouble(horseConfidence);
+        }
+        this.horseSymbol = horseSymbol.charAt(0);
+        this.totalWins = 0;
+        this.totalRaces = 0;
+        this.winRate = 0; //calculate
+        this.laneNumber = 1;
+
+        this.horseDistance = 0;
+        this.horseFallen = false;
         horseCounter++; // Increment the static horse counter
     }
 
