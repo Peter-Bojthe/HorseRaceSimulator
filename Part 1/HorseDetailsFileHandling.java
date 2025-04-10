@@ -48,8 +48,7 @@ public class HorseDetailsFileHandling {
         }
 
         try (PrintWriter horseFile = new PrintWriter(new FileWriter(FILE_NAME, true))) {
-            horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n", 
-                          name, confidence, character, win, total, winRate);
+            horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n",name, confidence, character, win, total, winRate);
         }
     }
 

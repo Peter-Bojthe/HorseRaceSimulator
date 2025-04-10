@@ -187,7 +187,7 @@ class Horse {
             this.horseConfidence = 0;
             return;
         }
-        this.horseConfidence = Math.round(newConfidence * Math.pow(10, 3)) / Math.pow(10, 3);
+        this.horseConfidence = Math.round(newConfidence * Math.pow(10, 2)) / Math.pow(10, 2);
     }
 
     /**

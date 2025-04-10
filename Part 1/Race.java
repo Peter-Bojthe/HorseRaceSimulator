@@ -7,6 +7,10 @@ import java.util.concurrent.TimeUnit;
 //  ♘  //
 //////////
 
+// FIX WIN-RATIO
+// Write new deatils to file
+
+
 /**
  * A three-horse race, each horse running in its own lane
  * for a given distance
@@ -51,7 +55,6 @@ class Race extends UserInput {
         boolean finishedRace = false;
 
         chooseSavedHorse();
-    
         raceLength = chooseTrackLength("\nLength of Race [25m, 100m]: ");
         createHorses();
         resetHorsesPosition();
@@ -62,7 +65,7 @@ class Race extends UserInput {
                 printRace();
                 finishedRace = raceFinished();
                 try {
-                    TimeUnit.MILLISECONDS.sleep(50);
+                    TimeUnit.MILLISECONDS.sleep(20);
                 } catch (InterruptedException e) {}
             }
             showWinner();
@@ -132,10 +135,22 @@ class Race extends UserInput {
     */
     private void changeRaceDetails() throws IOException {
         // Change IF to a WHILE later FIX
-        if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) removeLanes();
-        if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) addLanes();
-        if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) removeHorses();
-        if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) addHorses();
+        if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) {
+            removeLanes();
+            addHorsesToLanes();
+        }
+        if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) {
+            addLanes();
+            addHorsesToLanes();
+        }
+        if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) {
+            removeHorses();
+            addHorsesToLanes();
+        }
+        if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) {
+            addHorses();
+            addHorsesToLanes();
+        }
         if (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
             saveHorse();
             showHorseDetailsFromFile();
