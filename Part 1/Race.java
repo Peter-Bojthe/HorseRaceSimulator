@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author McRaceface
  * @author Peter Bojthe
- * @version 23/03/25
+ * @version 10/04/25
  * 
  */
 class Race extends UserInput {
@@ -26,6 +26,8 @@ class Race extends UserInput {
      */
     public Race() {
         // Initialize instance variables
+        // Empty Constructor
+        // Race details chosen by User
     }
 
     /**
@@ -48,10 +50,8 @@ class Race extends UserInput {
         boolean finishedSimulation = false;
         boolean finishedRace = false;
 
-        showHorseDetailsFromFile();
-        askUserToChooseHorseFromFile();
-        
-
+        chooseSavedHorse();
+    
         raceLength = chooseTrackLength("\nLength of Race [25m, 100m]: ");
         createHorses();
         resetHorsesPosition();
@@ -76,6 +76,18 @@ class Race extends UserInput {
                     changeRaceDetails();
                 }
             }
+        }
+    }
+
+    private void chooseSavedHorse() throws IOException {
+        boolean answer = askYesNo("Would you like to use a previously saved horse yes [1], no [0]: ");
+        if (answer) {
+            if (HorseDetailsFileHandling.countFileLines() == 0) {
+                System.out.println("File is empty");
+                return;
+            }
+            showHorseDetailsFromFile();
+            askUserToChooseHorseFromFile();
         }
     }
 
@@ -124,7 +136,10 @@ class Race extends UserInput {
         if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) addLanes();
         if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) removeHorses();
         if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) addHorses();
-        if (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) saveHorse();
+        if (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
+            saveHorse();
+            showHorseDetailsFromFile();
+        }
         if (askYesNo("\n\nWould you like to change the length of the race yes [1], no [0]: ")) {
              raceLength = chooseTrackLength("Length of Race [25m, 100m]: ");
         }
@@ -136,12 +151,12 @@ class Race extends UserInput {
      */
     private void saveHorse() throws IOException {
         showHorseDetails();
-        int pickedHorse = pickAnyHorse("Enter the lane number of the horse you want to save: ");
-        while (horses.get(pickedHorse) == null) {
+        int pickedHorseIndex = pickAnyHorse("Enter the lane number of the horse you want to save: ") -1;
+        while (horses.get(pickedHorseIndex) == null) {
             System.out.println("Lane is empty (invalid). ");
-            pickedHorse = pickAnyHorse("Enter the lane number of the horse you want to save: ");
+            pickedHorseIndex = pickAnyHorse("Enter the lane number of the horse you want to save: ") -1;
         }
-        Horse horse = horses.get(pickedHorse);
+        Horse horse = horses.get(pickedHorseIndex);
         HorseDetailsFileHandling.saveHorseDetails(horse.getName(), horse.getConfidence(), horse.getSymbol(), horse.getTotalWins(), horse.getTotalRaces(), horse.getWinRate());
         // System.exit(0);
     }
