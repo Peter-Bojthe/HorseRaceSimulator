@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -49,6 +50,59 @@ public class HorseDetailsFileHandling {
 
         try (PrintWriter horseFile = new PrintWriter(new FileWriter(FILE_NAME, true))) {
             horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n",name, confidence, character, win, total, winRate);
+        }
+    }
+
+    /**
+     * Update the saved horse details after every race
+     * Finds horse based on name (name is unique) and updates all of its details
+     */
+    public static void updateHorseInFile(Horse horse) throws IOException {
+        List<String> lines = new ArrayList<>();
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME)))
+        {
+            String line;
+            // Read header first
+            String header = reader.readLine();
+            if (header != null)
+            {
+                lines.add(header);
+            }
+            
+            while ((line = reader.readLine()) != null)
+            {
+                String[] parts = line.split(",");
+                if (parts.length >= 6 && parts[0].equalsIgnoreCase(horse.getName()))
+                {
+                    // Found the horse - replace with updated details
+                    String updatedLine = String.format("%s,%.2f,%s,%d,%d,%.2f",
+                        horse.getName(),
+                        horse.getConfidence(),
+                        horse.getSymbol(),
+                        horse.getTotalWins(),
+                        horse.getTotalRaces(),
+                        horse.getWinRate());
+                    lines.add(updatedLine);
+                } else
+                {
+                    lines.add(line);
+                }
+            }
+        }
+        
+        // Write all lines back to the file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME)))
+        {
+            for (String fileLine : lines)
+            {
+                writer.write(fileLine);
+                writer.newLine();
+            }
+        }
+        catch (IOException e)
+        {
+            System.err.println("Error writing to file: " + e.getMessage());
         }
     }
 

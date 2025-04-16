@@ -7,9 +7,8 @@ import java.util.concurrent.TimeUnit;
 //  ♘  //
 //////////
 
-// FIX WIN-RATIO
-// Write new deatils to file
-
+// Next to be done...
+// Random-Horse generation
 
 /**
  * A three-horse race, each horse running in its own lane
@@ -23,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 class Race extends UserInput {
     private int raceLength;
     static ArrayList<Horse> horses = new ArrayList<>();
+    static ArrayList<String> uniqueHorseNames = new ArrayList<>();
 
     /**
      * Constructor for objects of class Race
@@ -32,6 +32,21 @@ class Race extends UserInput {
         // Initialize instance variables
         // Empty Constructor
         // Race details chosen by User
+    }
+
+    /**
+     * Names must be unique
+     * check if nameis taken
+     * 
+     */
+    private boolean usedName(String name) {
+        for (int i = 0; i < uniqueHorseNames.size(); i++) {
+            if (name.equals(uniqueHorseNames.get(i))) {
+                System.out.println("Horse name taken.");
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -134,7 +149,6 @@ class Race extends UserInput {
     * @throws IOException 
     */
     private void changeRaceDetails() throws IOException {
-        // Change IF to a WHILE later FIX
         if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) {
             removeLanes();
             addHorsesToLanes();
@@ -220,6 +234,7 @@ class Race extends UserInput {
                 if (horses.get(input-1) != null) {
                     Horse.horseCounter--;
                 }
+                uniqueHorseNames.remove(input-1);
                 horses.remove(input-1);
                 if (horses.size() == 2) {
                     System.out.println("The number of lanes is now 2, cannot remove more.");
@@ -243,6 +258,7 @@ class Race extends UserInput {
                 System.out.println("Invalid Choice of Lane.");
             } else {
                 horses.set(input-1, null);
+                uniqueHorseNames.set(input-1, null);
                 Horse.horseCounter--;
                 done = askYesNo("Stop removing horses yes [1], no [0]: ");
             }
@@ -323,6 +339,10 @@ class Race extends UserInput {
      */
     private Horse createHorse(int lane) {
         String name = inputString("Horse Name: ");
+        while (usedName(name)) {
+            name = inputString("Horse Name: ");
+        }
+        uniqueHorseNames.set(lane-1, name);
         char character = inputCharacter("Horse Character: ");
         return new Horse(name, 0.25, character, 0, 0, 0, lane);
     }
@@ -335,6 +355,7 @@ class Race extends UserInput {
         int inputLanes = chooseNumberOfLanes("How many lanes would you like [2, 8]: ");
         for (int numberOfLanes = horses.size(); numberOfLanes < inputLanes; numberOfLanes++) {
             horses.add(numberOfLanes, null);
+            uniqueHorseNames.add(numberOfLanes, null);
         }
         int inputHorses = chooseNumberOfHorsesGivenNumberOfLanes("How many horses would you like: ", inputLanes);
         inputHorses = inputHorses - Horse.horseCounter;
@@ -351,15 +372,19 @@ class Race extends UserInput {
     /**
      * Displays the winner of the race and adjusts the confidence of the horses.
      */
-    private void showWinner() {
+    private void showWinner() throws IOException {
         for (Horse horse : horses) {
             if (horse == null) continue;
+            horse.setTotalRaces(horse.getTotalRaces()+1);
             if (raceWonBy(horse)) {
                 System.out.println(horse.getName()+" has won the Race");
                 horse.setConfidence(horse.getConfidence()*1.1);
+                horse.setTotalWins(horse.getTotalWins()+1);
             } else {
                 horse.setConfidence(horse.getConfidence()*0.9);
             }
+            horse.setWinRate(horse.getTotalWins(), horse.getTotalRaces());
+            HorseDetailsFileHandling.updateHorseInFile(horse);
         }
     }
 
