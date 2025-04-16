@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 // Horse Character.
@@ -16,10 +17,10 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author McRaceface
  * @author Peter Bojthe
- * @version 10/04/25
+ * @version 16/04/25
  * 
  */
-class Race extends UserInput {
+public class Race extends UserInput {
     private int raceLength;
     static ArrayList<Horse> horses = new ArrayList<>();
     static ArrayList<String> uniqueHorseNames = new ArrayList<>();
@@ -52,7 +53,7 @@ class Race extends UserInput {
     /**
      * Adds horses to their respective lanes based on their position in the list.
      */
-    public void addHorsesToLanes() {
+    private void addHorsesToLanes() {
         for (int i = 0; i < horses.size(); i++) {
             if (horses.get(i) == null) continue;
             horses.get(i).setLaneNumber(i+1);
@@ -70,8 +71,14 @@ class Race extends UserInput {
         boolean finishedRace = false;
 
         chooseSavedHorse();
+        askUserToGenerateRandomHorse();
         raceLength = chooseTrackLength("\nLength of Race [25m, 100m]: ");
-        createHorses();
+
+        // Only Create Horses if 2 or more horses have not yet bee chosen
+        if (horses.size() <= 1) {
+            createHorses();
+        }
+
         resetHorsesPosition();
 
         while (!finishedSimulation) {
@@ -97,6 +104,80 @@ class Race extends UserInput {
         }
     }
 
+    private void askUserToGenerateRandomHorse() {
+        boolean input = askYesNo("Would you like to add a randomly generated horse into the race? yes [1] no [0]: ");
+        if (!input) return;
+
+        int numberOfRandomHorses = inputNumber("How many Random Horse would you like [0-8]: ");
+        if (numberOfRandomHorses == 0) return;
+
+        while (numberOfRandomHorses < 0 || numberOfRandomHorses > 8) {
+            System.out.println("Invalid choice");
+            numberOfRandomHorses = inputNumber("How many Random Horse would you like [0-8]: ");
+        }
+
+        int added = 1;
+        while (added <= numberOfRandomHorses) {
+            horses.add(Horse.horseCounter, generateRandomHorse());
+            added++;
+        }
+    }
+
+    /**
+     * Generates a random horse with a randomly generated name and character
+     * @return A new Horse object with random attributes
+     */
+    private static Horse generateRandomHorse() {
+        String name = generateRandomHorseName();
+        char character = generateRandomAlphanumericChar();
+        Horse randomHorse = new Horse(name, 0.25, character, 0, 0, 0.0, Horse.horseCounter+1);
+        System.out.println(randomHorse.getName()+", "+randomHorse.getSymbol()+": has been randomly chosen.");
+        
+        return randomHorse;
+    }
+
+    /**
+     * Generates a random horse name by combining prefixes and suffixes
+     * @return A randomly generated horse name
+     */
+    private static String generateRandomHorseName() {
+        String[] prefixes = {
+            "Thunder", "Midnight", "Shadow", "Lightning", "Silver", 
+            "Golden", "Diamond", "Black", "White", "Red",
+            "Wild", "Crazy", "Majestic", "Royal", "Brave",
+            "Flying", "Dancing", "Galloping", "Mystic", "Spirit"
+        };
+        
+        String[] suffixes = {
+            "hoof", "mane", "tail", "storm", "fire",
+            "wind", "blaze", "dancer", "chaser", "runner",
+            "prince", "king", "queen", "star", "moon",
+            "sun", "dream", "whisper", "shadow", "flash"
+        };
+        
+        Random random = new Random();
+        String prefix = prefixes[random.nextInt(prefixes.length)];
+        String suffix = suffixes[random.nextInt(suffixes.length)];
+        
+        return prefix + " " + suffix;
+    }
+
+    /**
+     * Generates a random alphanumeric character (A-Z, a-z, 0-9)
+     * @return A random character
+     */
+    private static char generateRandomAlphanumericChar() {
+        Random random = new Random();
+        int choice = random.nextInt(3); // 0-2
+
+        return (char) (switch (choice) {
+            case 0 -> random.nextInt(26) + 65;
+            case 1 -> random.nextInt(26) + 97;
+            case 2 -> random.nextInt(10) + 48;
+            default -> 'X';
+        });
+    }
+
     private void chooseSavedHorse() throws IOException {
         boolean answer = askYesNo("Would you like to use a previously saved horse yes [1], no [0]: ");
         if (answer) {
@@ -119,8 +200,8 @@ class Race extends UserInput {
             }
             String[] horseDetails = HorseDetailsFileHandling.getHorseDetails(input);
             Horse horse = new Horse(horseDetails[0], horseDetails[1], horseDetails[2], horseDetails[3], horseDetails[4], horseDetails[5]);
-            horses.add(horse);
-            System.out.println("This horse will be added to lane 1.");
+            horses.add(Horse.horseCounter-1, horse);
+            System.out.println("This horse will be added to lane "+Horse.horseCounter);
         }
     }
 

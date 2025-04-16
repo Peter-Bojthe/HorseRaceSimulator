@@ -5,10 +5,10 @@
  * Winning increases confidence, while falling decreases it.
  * 
  * @author Peter Bojthe
- * @version 23/03/25
+ * @version 16/04/25
  */
 
-class Horse {
+public class Horse {
     // Fields of Horse
     private char horseSymbol;          // The character symbol representing the horse
     private final String horseName;    // The name of the horse
@@ -45,26 +45,35 @@ class Horse {
             this.horseConfidence = horseConfidence;
         }
         this.horseSymbol = horseSymbol;
-        this.totalWins = 0;
-        this.totalRaces = 0;
-        this.winRate = 0.0; //calculate
+        this.totalWins = totalWins;
+        this.totalRaces = totalRaces;
+        if (this.totalRaces == 0) {
+            this.winRate = 0;
+        } else {
+            this.winRate = totalWins / totalRaces;
+        }
         this.laneNumber = laneNumber;
 
         this.horseDistance = 0;
         this.horseFallen = false;
-        horseCounter++; // Increment the static horse counter
+        horseCounter++;
     }
 
     /**
-     * 
-     * 
-     *  Horse Details read in from file.
-     * 
-     * */
-
-    public Horse(String horseName, String horseConfidence, String horseSymbol, String totalWins, String totalRaces, String winRate) {
-
-
+     * Constructs a Horse object from file-derived string data.
+     * This constructor is specifically designed for instantiating horses
+     * from persisted file storage, where all attributes are stored as strings.
+     * Performs data validation and type conversion while initializing all horse properties.
+     *
+     * @param horseName String representation of the horse's unique identifier
+     * @param horseConfidence String representation of confidence value (0.0-1.0)
+     * @param horseSymbol String containing single character visual representation
+     * @param totalWins String representation of lifetime victory count
+     * @param totalRaces String representation of lifetime race participation
+     * @param winRate String representation of win percentage (0.0-1.0)
+     */
+    public Horse(String horseName, String horseConfidence, String horseSymbol, 
+                String totalWins, String totalRaces, String winRate) {
         this.horseName = horseName;
         // Ensure confidence is within the valid range [0.0, 1.0]
         if (Double.parseDouble(horseConfidence) > 1.0) {
@@ -75,14 +84,18 @@ class Horse {
             this.horseConfidence = Double.parseDouble(horseConfidence);
         }
         this.horseSymbol = horseSymbol.charAt(0);
-        this.totalWins = 0;
-        this.totalRaces = 0;
-        this.winRate = 0; //calculate
-        this.laneNumber = 1;
+        this.totalWins = Integer.parseInt(totalWins);
+        this.totalRaces = Integer.parseInt(totalRaces);
+        if (this.totalRaces == 0) {
+            this.winRate = 0;
+        } else {
+            this.winRate = Double.parseDouble(winRate);
+        }
+        this.laneNumber = 1; // Horse from file goes to lane 1
 
         this.horseDistance = 0;
         this.horseFallen = false;
-        horseCounter++; // Increment the static horse counter
+        horseCounter++; 
     }
 
     /**
@@ -156,70 +169,125 @@ class Horse {
     }
 
     /**
-     * Checks if the horse has fallen.
-     *
-     * @return true if the horse has fallen, false otherwise.
+     * Determines whether the horse has fallen during the race.
+     * This state affects the horse's ability to continue moving forward.
+     * 
+     * @return true if the horse is in a fallen state, false if the horse remains upright
      */
     public boolean hasFallen() {
         return this.horseFallen;
     }
 
     /**
-     * Moves the horse forward by one unit.
+     * Advances the horse's position by one unit along the race track.
+     * This method unconditionally increments the distance regardless of the horse's state.
+     * For race simulation integrity, callers should typically check hasFallen() first.
      */
     public void moveForward() {
-        this.horseDistance = this.horseDistance + 1;
+        this.horseDistance += 1;  // Using compound assignment for clarity
     }
 
     /**
-     * Sets the confidence rating of the horse.
-     * The confidence is clamped between 0.0 and 1.0.
-     *
-     * @param newConfidence the new confidence rating to set (0.0 to 1.0).
+     * Updates the horse's confidence rating with value
+     * Confidence values are constrained to the range [0.0, 1.0] and rounded to 2 decimal places
+     * for consistent simulation behavior, out-of-range values are automatically clamped
+     * to the nearest valid value
+     * 
+     * @param newConfidence The new confidence level
      */
-    public void setConfidence(double newConfidence) {
-        if (newConfidence > 1) {
-            System.out.println("Horse Confidence Must Be Between 0-1.");
-            this.horseConfidence = 1;
-            return;
-        } else if (newConfidence < 0) {
-            System.out.println("Horse Confidence Must Be Between 0-1.");
-            this.horseConfidence = 0;
-            return;
+    public void setConfidence(double newConfidence) {   
+        // Clamp value to valid range with informative messaging
+        if (newConfidence > 1.0) {
+            this.horseConfidence = 1.0;
+        } else if (newConfidence < 0.0) {
+            this.horseConfidence = 0.0;
+        } else {
+            // Round to 2 decimal places for consistency in simulation calculations
+            this.horseConfidence = Math.round(newConfidence * 100.0) / 100.0;
         }
-        this.horseConfidence = Math.round(newConfidence * Math.pow(10, 2)) / Math.pow(10, 2);
     }
 
     /**
-     * Sets the character symbol representing the horse.
-     *
-     * @param newSymbol the new character symbol to set.
+     * Updates the visual representation symbol for the horse.
+     * The symbol should be a single Unicode character that will be displayed
+     * 
+     * @param newSymbol The character to use for race display purposes
      */
     public void setSymbol(char newSymbol) {
         this.horseSymbol = newSymbol;
     }
 
+    /**
+     * Retrieves the cumulative count of races won by this horse.
+     * 
+     * @return Total wins as a non-negative integer
+     */
     public int getTotalWins() {
         return totalWins;
     }
 
+    /**
+     * Updates the horse's lifetime win count.
+     * 
+     * @param totalWins New win count (must be non-negative)
+     * @throws IllegalArgumentException if negative value is provided
+     */
     public void setTotalWins(int totalWins) {
+        if (totalWins < 0) {
+            throw new IllegalArgumentException("Win count cannot be negative");
+        }
         this.totalWins = totalWins;
     }
 
+    /**
+     * Retrieves the cumulative count of races participated in by this horse.
+     * 
+     * @return Total races as a non-negative integer
+     */
     public int getTotalRaces() {
         return totalRaces;
     }
 
+    /**
+     * Updates the horse's lifetime race participation count.
+     * 
+     * @param totalRaces New race count (must be non-negative and ≥ totalWins)
+     * @throws IllegalArgumentException if invalid count is provided
+     */
     public void setTotalRaces(int totalRaces) {
+        if (totalRaces < 0) {
+            throw new IllegalArgumentException("Race count cannot be negative");
+        }
+        if (totalRaces < this.totalWins) {
+            throw new IllegalArgumentException("Race count cannot be less than win count");
+        }
         this.totalRaces = totalRaces;
     }
 
-    public double getWinRate() {
-        return winRate;
+    /**
+     * Calculates and updates the horse's win rate based on current statistics.
+     * Win rate is computed as wins divided by total races, with protection against
+     * division by zero (returns 0.0 when no races completed).
+     * 
+     * @param wins Number of wins (must be <= total races and non-negative)
+     * @param total Total races (must be >= wins and non-negative)
+     */
+    public void setWinRate(double wins, double total) {
+        if (wins < 0 || total < 0) {
+            throw new IllegalArgumentException("Values cannot be negative");
+        }
+        if (wins > total) {
+            throw new IllegalArgumentException("Wins cannot exceed total races");
+        }
+        this.winRate = (total == 0) ? 0.0 : wins / total;
     }
 
-    public void setWinRate(double wins, double total) {
-        this.winRate = wins / total;
+    /**
+     * Retrieves the current win rate percentage.
+     * 
+     * @return Win rate as a decimal between 0.0 (0%) and 1.0 (100%)
+     */
+    public double getWinRate() {
+        return this.winRate;
     }
 }

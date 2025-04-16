@@ -12,6 +12,8 @@ import java.util.List;
  * Handles storage and retrieval of horse details in CSV format.
  * Provides methods for saving, counting, retrieving, and displaying horse data
  * with comprehensive error handling and data validation.
+ * @author Peter Bojthe
+ * @version 16/04/25
  */
 public class HorseDetailsFileHandling {
     /** The name of the CSV file used for storing horse details */
@@ -21,7 +23,9 @@ public class HorseDetailsFileHandling {
     private static final int EXPECTED_COLUMNS = 6;
     
     /**
-     * Saves horse details to the CSV file in append mode.
+     * Saves horse details to the CSV file in append mode after validating parameters
+     * and ensuring the horse name doesn't already exist in the file. If the horse
+     * name exists, the method returns without making any changes.
      *
      * @param name The name of the horse (cannot be null or empty)
      * @param confidence The confidence score (0.0-1.0 scale)
@@ -32,8 +36,8 @@ public class HorseDetailsFileHandling {
      * @throws IOException If an I/O error occurs
      * @throws IllegalArgumentException If any parameter is invalid
      */
-    public static void saveHorseDetails(String name, double confidence, char character, 
-                                      int win, int total, double winRate) throws IOException {
+    public static void saveHorseDetails(String name, double confidence, char character,
+                                    int win, int total, double winRate) throws IOException {
         // Parameter validation
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Horse name cannot be null or empty");
@@ -48,8 +52,24 @@ public class HorseDetailsFileHandling {
             throw new IllegalArgumentException("Win rate must be between 0.0 and 1.0");
         }
 
-        try (PrintWriter horseFile = new PrintWriter(new FileWriter(FILE_NAME, true))) {
-            horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n",name, confidence, character, win, total, winRate);
+        // Check if horse name already exists
+        File file = new File(FILE_NAME);
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    if (parts.length > 0 && parts[0].equalsIgnoreCase(name)) {
+                        return; // Horse already exists - silent return
+                    }
+                }
+            }
+        }
+
+        // Save the new horse
+        try (PrintWriter horseFile = new PrintWriter(new FileWriter(file, true))) {
+            horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n",
+                            name, confidence, character, win, total, winRate);
         }
     }
 
@@ -59,22 +79,17 @@ public class HorseDetailsFileHandling {
      */
     public static void updateHorseInFile(Horse horse) throws IOException {
         List<String> lines = new ArrayList<>();
-        
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME)))
-        {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             // Read header first
             String header = reader.readLine();
-            if (header != null)
-            {
+            if (header != null) {
                 lines.add(header);
             }
             
-            while ((line = reader.readLine()) != null)
-            {
+            while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length >= 6 && parts[0].equalsIgnoreCase(horse.getName()))
-                {
+                if (parts.length >= 6 && parts[0].equalsIgnoreCase(horse.getName())) {
                     // Found the horse - replace with updated details
                     String updatedLine = String.format("%s,%.2f,%s,%d,%d,%.2f",
                         horse.getName(),
@@ -84,24 +99,19 @@ public class HorseDetailsFileHandling {
                         horse.getTotalRaces(),
                         horse.getWinRate());
                     lines.add(updatedLine);
-                } else
-                {
+                } else {
                     lines.add(line);
                 }
             }
         }
         
         // Write all lines back to the file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME)))
-        {
-            for (String fileLine : lines)
-            {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+            for (String fileLine : lines) {
                 writer.write(fileLine);
                 writer.newLine();
             }
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             System.err.println("Error writing to file: " + e.getMessage());
         }
     }

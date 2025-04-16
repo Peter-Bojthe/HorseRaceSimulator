@@ -5,7 +5,7 @@
  * It is designed to be implemented by classes that handle user interaction and input validation.
  * 
  * @author Peter Bojthe
- * @version 23/03/25
+ * @version 16/04/25
  * 
  */
 interface UserInputInterface {
