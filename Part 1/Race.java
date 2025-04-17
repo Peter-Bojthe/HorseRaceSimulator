@@ -3,14 +3,6 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-// Horse Character.
-//////////
-//  ♘  //
-//////////
-
-// Next to be done...
-// Random-Horse generation
-
 /**
  * A three-horse race, each horse running in its own lane
  * for a given distance
@@ -43,7 +35,7 @@ public class Race extends UserInput {
     private boolean usedName(String name) {
         for (int i = 0; i < uniqueHorseNames.size(); i++) {
             if (name.equals(uniqueHorseNames.get(i))) {
-                System.out.println("Horse name taken.");
+                System.out.println("\nHorse name taken. Choose another name.");
                 return true;
             }
         }
@@ -72,7 +64,7 @@ public class Race extends UserInput {
 
         chooseSavedHorse();
         askUserToGenerateRandomHorse();
-        raceLength = chooseTrackLength("\nLength of Race [25m, 100m]: ");
+        raceLength = chooseTrackLength("\nChoose the length of race [25m - 100m]: ");
 
         // Only Create Horses if 2 or more horses have not yet bee chosen
         if (horses.size() <= 1) {
@@ -94,10 +86,10 @@ public class Race extends UserInput {
             resetHorsesPosition();
             showRaceDetails();
 
-            finishedSimulation = askYesNo("STOP SIMULATION:  yes [1] no [0]: ");
+            finishedSimulation = askYesNo("\nSTOP SIMULATION:  yes [1], no [0]: ");
             if (!finishedSimulation) {
                 finishedRace = false;
-                if (askYesNo("Would you like to make changes to the next simulation yes [1], no [0]: ")) {
+                if (askYesNo("\nWould you like to make changes to the next simulation yes [1], no [0]: ")) {
                     changeRaceDetails();
                 }
             }
@@ -105,20 +97,22 @@ public class Race extends UserInput {
     }
 
     private void askUserToGenerateRandomHorse() {
-        boolean input = askYesNo("Would you like to add a randomly generated horse into the race? yes [1] no [0]: ");
+        boolean input = askYesNo("\nWould you like to add a randomly generated horse into the race? yes [1] no [0]: ");
         if (!input) return;
 
-        int numberOfRandomHorses = inputNumber("How many Random Horse would you like [0-8]: ");
+        int numberOfRandomHorses = inputNumber("\nHow many Random Horse would you like [0 - 8]: ");
         if (numberOfRandomHorses == 0) return;
 
         while (numberOfRandomHorses < 0 || numberOfRandomHorses > 8) {
-            System.out.println("Invalid choice");
-            numberOfRandomHorses = inputNumber("How many Random Horse would you like [0-8]: ");
+            System.out.println("\nInvalid choice. Try again.");
+            numberOfRandomHorses = inputNumber("\nHow many Random Horse would you like [0 - 8]: ");
         }
 
         int added = 1;
         while (added <= numberOfRandomHorses) {
-            horses.add(Horse.horseCounter, generateRandomHorse());
+            Horse horse = generateRandomHorse();
+            horses.add(Horse.horseCounter-1, horse);
+            uniqueHorseNames.add(Horse.horseCounter-1, horse.getName());
             added++;
         }
     }
@@ -131,7 +125,8 @@ public class Race extends UserInput {
         String name = generateRandomHorseName();
         char character = generateRandomAlphanumericChar();
         Horse randomHorse = new Horse(name, 0.25, character, 0, 0, 0.0, Horse.horseCounter+1);
-        System.out.println(randomHorse.getName()+", "+randomHorse.getSymbol()+": has been randomly chosen.");
+        System.out.println("\n\nRandom Horse: ");
+        System.out.println("Horse Name: "+randomHorse.getName()+",\nHorse Symbol: "+randomHorse.getSymbol());
         
         return randomHorse;
     }
@@ -179,10 +174,10 @@ public class Race extends UserInput {
     }
 
     private void chooseSavedHorse() throws IOException {
-        boolean answer = askYesNo("Would you like to use a previously saved horse yes [1], no [0]: ");
+        boolean answer = askYesNo("\nWould you like to use a previously saved horse yes [1], no [0]: ");
         if (answer) {
             if (HorseDetailsFileHandling.countFileLines() == 0) {
-                System.out.println("File is empty");
+                System.out.println("\nThere are curently no saved horses...");
                 return;
             }
             showHorseDetailsFromFile();
@@ -193,15 +188,16 @@ public class Race extends UserInput {
     private void askUserToChooseHorseFromFile() throws IOException {
         int numberOfSavedHorses = HorseDetailsFileHandling.countFileLines();
         if (numberOfSavedHorses >=1 ) {
-            int input = inputNumber("Enter the row number of the horse you want to use: ");
+            int input = inputNumber("\nEnter the row number of the horse you want to use: ");
             if (input <= 0 || input > numberOfSavedHorses) {
-                System.out.println("Invalid choice of file rows.");
-                input = inputNumber("Enter the row number of the horse you want to use: ");
+                System.out.println("\nInvalid choice of file rows.");
+                input = inputNumber("\nEnter the row number of the horse you want to use: ");
             }
             String[] horseDetails = HorseDetailsFileHandling.getHorseDetails(input);
-            Horse horse = new Horse(horseDetails[0], horseDetails[1], horseDetails[2], horseDetails[3], horseDetails[4], horseDetails[5]);
+            Horse horse = new Horse(horseDetails[0], horseDetails[1], horseDetails[2], horseDetails[3], horseDetails[4], horseDetails[5], Horse.horseCounter+1);
             horses.add(Horse.horseCounter-1, horse);
-            System.out.println("This horse will be added to lane "+Horse.horseCounter);
+            uniqueHorseNames.add(Horse.horseCounter-1, horse.getName());
+            System.out.println("\nThis horse will be added to lane "+Horse.horseCounter);
         }
     }
 
@@ -216,13 +212,13 @@ public class Race extends UserInput {
     private void showRaceDetails() {
         System.out.println("\nCurrent length of the race: "+raceLength);
         System.out.println("Current number of lanes: "+horses.size());
-        System.out.println("Current number of horses: "+Horse.horseCounter);
+        System.out.println("Current number of horses: "+Horse.horseCounter+"\n\n");
         for (Horse horse : horses) {
             if (horse == null) continue;
             System.out.print(horse.getName()+" is in lane "+horse.getLaneNumber());
             System.out.println(", Confidence: "+horse.getConfidence());
         }
-        System.out.println();
+        System.out.println("\n");
     }
 
     /**
@@ -251,7 +247,7 @@ public class Race extends UserInput {
             showHorseDetailsFromFile();
         }
         if (askYesNo("\n\nWould you like to change the length of the race yes [1], no [0]: ")) {
-             raceLength = chooseTrackLength("Length of Race [25m, 100m]: ");
+             raceLength = chooseTrackLength("Length of Race [25m - 100m]: ");
         }
     }
 
@@ -261,14 +257,13 @@ public class Race extends UserInput {
      */
     private void saveHorse() throws IOException {
         showHorseDetails();
-        int pickedHorseIndex = pickAnyHorse("Enter the lane number of the horse you want to save: ") -1;
+        int pickedHorseIndex = pickAnyHorse("\nEnter the lane number of the horse you want to save: ") -1;
         while (horses.get(pickedHorseIndex) == null) {
-            System.out.println("Lane is empty (invalid). ");
-            pickedHorseIndex = pickAnyHorse("Enter the lane number of the horse you want to save: ") -1;
+            System.out.println("\nLane is empty. ");
+            pickedHorseIndex = pickAnyHorse("\nEnter the lane number of the horse you want to save: ") -1;
         }
         Horse horse = horses.get(pickedHorseIndex);
         HorseDetailsFileHandling.saveHorseDetails(horse.getName(), horse.getConfidence(), horse.getSymbol(), horse.getTotalWins(), horse.getTotalRaces(), horse.getWinRate());
-        // System.exit(0);
     }
 
     /**
@@ -288,7 +283,7 @@ public class Race extends UserInput {
         horses.add(null);
         boolean done = false;
         while (horses.size() <= 8 && !done) {
-            System.out.println("There are currently "+horses.size()+" lanes.");
+            System.out.println("\nThere are currently "+horses.size()+" lanes.");
             done = askYesNo("Would you like to add a lane yes [1], no [0]");
             if (done) {
                 horses.add(null);
@@ -306,7 +301,7 @@ public class Race extends UserInput {
     private void removeLanes() {
         boolean done = false;
         while (horses.size() > 2 && !done) {
-            System.out.println("There are currently "+horses.size()+" lanes.");
+            System.out.println("\nThere are currently "+horses.size()+" lanes.");
             System.out.println("The number of lanes cannot be less than 2");
             int input = pickOneOfTheLanes("Enter the lane number you want to remove: ", horses.size());
             if (input-1 > horses.size()) {
@@ -318,7 +313,7 @@ public class Race extends UserInput {
                 uniqueHorseNames.remove(input-1);
                 horses.remove(input-1);
                 if (horses.size() == 2) {
-                    System.out.println("The number of lanes is now 2, cannot remove more.");
+                    System.out.println("\nThe number of lanes is now 2, cannot remove more.");
                     return;
                 }
                 done = askYesNo("Stop removing Lanes yes [1], no [0]");
@@ -334,14 +329,14 @@ public class Race extends UserInput {
         boolean done = false;
         while (horseLanes() >= 2  && !done) {
             showFullLanes();
-            int input = pickOneOfTheLanes("Enter the lane number of the horse you want to remove: ", horses.size());
+            int input = pickOneOfTheLanes("\nEnter the lane number of the horse you want to remove: ", horses.size());
             if (input-1 > horses.size() || horses.get(input-1) == null) {
                 System.out.println("Invalid Choice of Lane.");
             } else {
                 horses.set(input-1, null);
                 uniqueHorseNames.set(input-1, null);
                 Horse.horseCounter--;
-                done = askYesNo("Stop removing horses yes [1], no [0]: ");
+                done = askYesNo("\nStop removing horses yes [1], no [0]: ");
             }
         }
     }
@@ -368,7 +363,7 @@ public class Race extends UserInput {
         for (Horse horse : horses) {
             if (horse == null) return false;
         }
-        System.out.println("All lanes taken");
+        System.out.println("\nAll lanes taken");
         return true;
     }
 
@@ -379,7 +374,7 @@ public class Race extends UserInput {
         boolean done = false;
         while (!fullLanes() && !done) {
             showEmptyLanes();
-            int input = pickOneOfTheLanes("Enter the lane number you want to add a horse to: ", horses.size());
+            int input = pickOneOfTheLanes("\nEnter the lane number you want to add a horse to: ", horses.size());
             if (input-1 > horses.size() || horses.get(input-1) != null) {
                 System.out.println("Invalid Lane or Taken Lane.");
             } else {
@@ -394,7 +389,7 @@ public class Race extends UserInput {
      * Displays lanes that are occupied by horses.
      */
     private void showFullLanes() {
-        System.out.println("Lanes with Horses: ");
+        System.out.println("\nLanes with Horses: ");
         for (int i = 0; i < horses.size(); i++) {
             if (horses.get(i) == null) continue;
             System.out.println(i+1);
@@ -405,7 +400,7 @@ public class Race extends UserInput {
      * Displays lanes that are empty.
      */
     private void showEmptyLanes() {
-        System.out.println("Empty Lanes: ");
+        System.out.println("\nEmpty Lanes: ");
         for (int i = 0; i < horses.size(); i++) {
             if (horses.get(i) != null) continue;
             System.out.println(i+1);
@@ -419,7 +414,7 @@ public class Race extends UserInput {
      * @return the created Horse object.
      */
     private Horse createHorse(int lane) {
-        String name = inputString("Horse Name: ");
+        String name = inputString("\nHorse Name: ");
         while (usedName(name)) {
             name = inputString("Horse Name: ");
         }
@@ -432,8 +427,7 @@ public class Race extends UserInput {
      * Initializes the horses and lanes for the race.
      */
     private void createHorses() {
-        //horses.clear();
-        int inputLanes = chooseNumberOfLanes("How many lanes would you like [2, 8]: ");
+        int inputLanes = chooseNumberOfLanes("\nHow many lanes would you like [2, 8]: ");
         for (int numberOfLanes = horses.size(); numberOfLanes < inputLanes; numberOfLanes++) {
             horses.add(numberOfLanes, null);
             uniqueHorseNames.add(numberOfLanes, null);
@@ -441,10 +435,10 @@ public class Race extends UserInput {
         int inputHorses = chooseNumberOfHorsesGivenNumberOfLanes("How many horses would you like: ", inputLanes);
         inputHorses = inputHorses - Horse.horseCounter;
         for (int numberOfHorses = 0; numberOfHorses < inputHorses; numberOfHorses++) {
-            int lane = pickOneOfTheLanes("Which lane do you want to add this horse to: ", inputLanes);
+            int lane = pickOneOfTheLanes("\nChoose a lane to add this horse to [1 - "+inputLanes+"]: ", inputLanes);
             while (horses.get(lane-1) != null) {
-                System.out.println("Lane is taken by another horse.");
-                lane = pickOneOfTheLanes("Which lane do you want to add this horse to: ", inputLanes);
+                System.out.println("Lane "+lane+" is taken by another horse.");
+                lane = pickOneOfTheLanes("\nChoose a lane to add this horse to [1 - "+inputLanes+"]: ", inputLanes);
             }
             horses.set(lane-1, createHorse(lane));
         }
@@ -452,13 +446,14 @@ public class Race extends UserInput {
 
     /**
      * Displays the winner of the race and adjusts the confidence of the horses.
+     * And adjust the total races, total wins, and win rate of the horse
      */
     private void showWinner() throws IOException {
         for (Horse horse : horses) {
             if (horse == null) continue;
             horse.setTotalRaces(horse.getTotalRaces()+1);
             if (raceWonBy(horse)) {
-                System.out.println(horse.getName()+" has won the Race");
+                System.out.println("\n\n"+horse.getName()+" has won the Race!");
                 horse.setConfidence(horse.getConfidence()*1.1);
                 horse.setTotalWins(horse.getTotalWins()+1);
             } else {

@@ -72,8 +72,7 @@ public class Horse {
      * @param totalRaces String representation of lifetime race participation
      * @param winRate String representation of win percentage (0.0-1.0)
      */
-    public Horse(String horseName, String horseConfidence, String horseSymbol, 
-                String totalWins, String totalRaces, String winRate) {
+    public Horse(String horseName, String horseConfidence, String horseSymbol, String totalWins, String totalRaces, String winRate, int lane) {
         this.horseName = horseName;
         // Ensure confidence is within the valid range [0.0, 1.0]
         if (Double.parseDouble(horseConfidence) > 1.0) {
@@ -91,7 +90,7 @@ public class Horse {
         } else {
             this.winRate = Double.parseDouble(winRate);
         }
-        this.laneNumber = 1; // Horse from file goes to lane 1
+        this.laneNumber = lane;
 
         this.horseDistance = 0;
         this.horseFallen = false;
