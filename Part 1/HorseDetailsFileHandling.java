@@ -261,7 +261,7 @@ public class HorseDetailsFileHandling {
         System.out.print("|");
         for (int i = 0; i < row.length; i++) {
             String value = row[i].trim();
-            if (value.matches("-?\\d+(\\.\\d+)?")) { // Numeric value
+            if (value.matches("[A-Za-z0-9]+")) { // Alphanumeric value
                 System.out.printf(" %" + colWidths[i] + "s |", value);
             } else { // String value
                 System.out.printf(" %-" + colWidths[i] + "s |", value);
