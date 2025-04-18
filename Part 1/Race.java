@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Race extends UserInput {
     private int raceLength;
+    private String raceCondition = "Sunny";
     static ArrayList<Horse> horses = new ArrayList<>();
     static ArrayList<String> uniqueHorseNames = new ArrayList<>();
 
@@ -40,6 +41,50 @@ public class Race extends UserInput {
             }
         }
         return false;
+    }
+
+    /**
+     * weather during race
+     * race conditions
+     * effects horse' confidence
+     */
+    private void raceConditions() {
+        Random random = new Random();
+
+        String[] weatherConditions = {"Raining", "Wet", "Sunny", "Snow"};
+        double[] weatherConditionsEffect = {0.25, 0.15, 1, 0.50};
+
+        int chosen = random.nextInt(weatherConditions.length);
+        String newWeatherCondition = weatherConditions[chosen];
+        double change = weatherConditionsEffect[chosen];
+
+        if (raceCondition.equals(newWeatherCondition)) {
+            System.out.println("\n\nWeather conditions have not changed.");
+            return;
+        }
+
+        changeHorseConfidenceDueToConditions(newWeatherCondition, change);
+    }
+
+    /**
+     * 
+     * Change horse confidence
+     * and output information about the weather
+     * @param weather new weather condition
+     * @param change the scale factor by which the horse confidence will be 
+     */
+    private void changeHorseConfidenceDueToConditions(String weather, double change) {
+        switch (weather) {
+            case "Raining" -> System.out.println("\nHorse confidence is decreased by 0.25, due to rain.");
+            case "Wet"     -> System.out.println("\nHorse confidence is decreased by 0.15, due to a wet track.");
+            case "Sunny"   -> System.out.println("\nHorse confidence is not affected, it is sunny.");
+            case "Snow"    -> System.out.println("\nHorse confidence is decreased by 0.50 due to snow.");
+        }
+        for (Horse horse : horses) {
+            if (horse == null) continue;
+            horse.setConfidence(horse.getConfidence()*change);
+        }
+        raceCondition = weather;
     }
 
     /**
@@ -70,30 +115,45 @@ public class Race extends UserInput {
         if (horses.size() <= 1) {
             createHorses();
         }
-
+        
+        raceConditions();
         askToPlaceBet();
         resetHorsesPosition();
 
         while (!finishedSimulation) {
+            // Before Race;
+            try {
+                System.out.print("\nRace will start soon...");
+                TimeUnit.MILLISECONDS.sleep(2000);
+            } catch (InterruptedException e) {}
+
+            // This is the Race
             while (!finishedRace) {
                 moveAllHorses();
                 printRace();
                 finishedRace = raceFinished();
+
+                // Wait bwtween horse moves
                 try {
-                    TimeUnit.MILLISECONDS.sleep(20);
+                    TimeUnit.MILLISECONDS.sleep(100);
                 } catch (InterruptedException e) {}
-            }
+            } // END RACE
+
+            // End of race PROCEDURES
             showWinner();
             resetHorsesPosition();
             showRaceDetails();
             removeAllBets();
 
+            // Between Races or Quit program
             finishedSimulation = askYesNo("\nSTOP SIMULATION:  yes [1], no [0]: ");
             if (!finishedSimulation) {
                 finishedRace = false;
                 if (askYesNo("\nWould you like to make changes to the next simulation yes [1], no [0]: ")) {
                     changeRaceDetails();
                 }
+                System.out.println("\n\nA new race will begin...");
+                raceConditions();
                 askToPlaceBet();
             }
         }
@@ -120,6 +180,10 @@ public class Race extends UserInput {
                 if (horse == null) continue;
                 if (horse.getName().equals(name)) {
                     horse.setBetPlacedOn(true);
+                    for (Horse horse1 : horses) {
+                        if (horse1 == null) continue;
+                        System.out.println(horse.getConfidence());
+                    }
                     return;
                 }
             }
