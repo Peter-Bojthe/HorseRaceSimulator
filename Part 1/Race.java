@@ -107,6 +107,7 @@ public class Race extends UserInput {
 
     private void removeAllBets() {
         for (Horse horse : horses) {
+            if (horse == null) continue;
             horse.setBetPlacedOn(false);
             horse.setWinnings(0.0);
         }
@@ -137,6 +138,7 @@ public class Race extends UserInput {
         double usersBet = placeBet("How much money are you putting on this race: ");
         if (usersBet == 0.0) return;
         for (Horse horse : horses) {
+            if (horse == null) continue;
             horse.setWinnings(BettingSystem.calculateWinnings(horse, usersBet));
             System.out.println("If "+horse.getName()+" wins then the payout will be £"+horse.getWinnings());
         }
@@ -156,12 +158,16 @@ public class Race extends UserInput {
             numberOfRandomHorses = inputNumber("\nHow many Random Horse would you like [0 - 8]: ");
         }
 
-        int added = 1;
-        while (added <= numberOfRandomHorses) {
+        int added = 0;
+        while (added < numberOfRandomHorses && horses.size() < 8) {
             Horse horse = generateRandomHorse();
             horses.add(Horse.horseCounter-1, horse);
             uniqueHorseNames.add(Horse.horseCounter-1, horse.getName());
             added++;
+        }
+        if (horses.size() == 8 && added != numberOfRandomHorses) {
+            System.out.println("\nAll random horses could not be added,\n8 lane limit reached.");
+            System.out.println(numberOfRandomHorses-added+" random horses has not been addded.");
         }
     }
 
