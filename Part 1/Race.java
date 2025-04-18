@@ -59,7 +59,7 @@ public class Race extends UserInput {
         double change = weatherConditionsEffect[chosen];
 
         if (raceCondition.equals(newWeatherCondition)) {
-            System.out.println("\n\nWeather conditions have not changed.");
+            System.out.println("\n\nWeather conditions have not changed. ("+raceCondition+")");
             return;
         }
 
@@ -128,6 +128,7 @@ public class Race extends UserInput {
             } catch (InterruptedException e) {}
 
             // This is the Race
+            long startTime = System.nanoTime(); // Start of race timer
             while (!finishedRace) {
                 moveAllHorses();
                 printRace();
@@ -138,6 +139,12 @@ public class Race extends UserInput {
                     TimeUnit.MILLISECONDS.sleep(100);
                 } catch (InterruptedException e) {}
             } // END RACE
+
+            long endTime = System.nanoTime(); // End of race timer
+            long raceDurationNano = endTime - startTime; 
+            double raceDurationSeconds = raceDurationNano / 1_000_000_000.0; 
+            raceDurationSeconds = Math.round(raceDurationSeconds*100.0)/100.0;
+            System.out.println("The race was completed in "+raceDurationSeconds+" seconds.");
 
             // End of race PROCEDURES
             showWinner();
@@ -180,10 +187,6 @@ public class Race extends UserInput {
                 if (horse == null) continue;
                 if (horse.getName().equals(name)) {
                     horse.setBetPlacedOn(true);
-                    for (Horse horse1 : horses) {
-                        if (horse1 == null) continue;
-                        System.out.println(horse.getConfidence());
-                    }
                     return;
                 }
             }
