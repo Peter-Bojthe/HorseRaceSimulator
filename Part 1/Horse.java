@@ -10,15 +10,17 @@
 
 public class Horse {
     // Fields of Horse
-    private char horseSymbol;          // The character symbol representing the horse
-    private final String horseName;    // The name of the horse
-    private double horseConfidence;    // The confidence rating of the horse (0.0 to 1.0)
-    private int horseDistance;         // The distance the horse has traveled in the race
-    private boolean horseFallen;       // Flag indicating whether the horse has fallen
-    private int laneNumber;            // The lane number assigned to the horse
-    private int totalRaces;            // Counter for the total number of races
-    private int totalWins;             // Counter for the number of wins
-    private double winRate;            // total wins divided by the total races
+    private char horseSymbol;              // The character symbol representing the horse
+    private final String horseName;        // The name of the horse
+    private double horseConfidence;        // The confidence rating of the horse (0.0 to 1.0)
+    private int horseDistance;             // The distance the horse has traveled in the race
+    private boolean horseFallen;           // Flag indicating whether the horse has fallen
+    private int laneNumber;                // The lane number assigned to the horse
+    private int totalRaces;                // Counter for the total number of races
+    private int totalWins;                 // Counter for the number of wins
+    private double winRate;                // total wins divided by the total races
+    private double winnings = 0.0;         // the money won by the user if the horse wins (initially 0)
+    private boolean betPlacedOn = false;   // if the user has put a bet on a horse then true
 
     // Fields of Class Horse
     static int horseCounter;           // Static counter to track the number of horses created
@@ -288,5 +290,21 @@ public class Horse {
      */
     public double getWinRate() {
         return this.winRate;
+    }
+
+    public double getWinnings() {
+        return winnings;
+    }
+
+    public void setWinnings(double winnings) {
+        this.winnings = Math.round(winnings * 100.0) / 100.0;
+    }
+
+    public boolean isBetPlacedOn() {
+        return betPlacedOn;
+    }
+
+    public void setBetPlacedOn(boolean betPlacedOn) {
+        this.betPlacedOn = betPlacedOn;
     }
 }

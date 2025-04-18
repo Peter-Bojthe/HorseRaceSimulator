@@ -28,6 +28,41 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
     }
 
     /**
+     * Prompts the user for a number input and validates it as a double.
+     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated double input from the user.
+     */
+    public double inputDouble(String statement) {
+        String input = inputString(statement);
+        boolean valid = validateDouble(input);
+        while (!valid) {
+            input = inputString("Invalid input.\n"+statement+": ");
+            valid = validateDouble(input);
+        }
+        return Double.parseDouble(input);
+    }
+
+    /**
+     * Validates whether the given string can be parsed as a double.
+     * 
+     * @param input the string to validate.
+     * @return true if the input is a valid double, false otherwise.
+     */
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")
+    private boolean validateDouble(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            Double.parseDouble(input.trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
      * Prompts the user for a character input and validates it.
      * 
      * @param statement the prompt message to display to the user.
@@ -54,7 +89,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
     public String inputString(String statement) {
         @SuppressWarnings("resource") // Resource Leak: scanner never closed
         Scanner scanner = new Scanner(System.in);
-        System.out.println(statement);
+        System.out.print(statement);
         return scanner.nextLine();
     }
 
@@ -169,7 +204,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      */
     @Override
     public int chooseNumberOfLanes(String statement) {
-        System.out.println("Number of lanes must be greater than 2 to start race simulation.");
+        System.out.println("\n\nNumber of lanes must be greater than 2 to start race simulation.");
         int input = inputNumber(statement);
         while (input < 2 || input > 8) {
             System.out.println("Number of lanes must be greater than 2 to start race simulation.");
@@ -209,5 +244,24 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
             input = inputNumber(statement);
         }
         return input;
+    }
+
+    public double placeBet(String statement) {
+        if (BettingSystem.balance == 0.0) {
+            System.out.println("Balance is £0. Cannot place Bets.");
+            return 0.0;
+        }
+
+        double bet = inputDouble(statement);
+        while (bet <= 0.0 || bet > BettingSystem.balance) {
+            if (bet <= 0.0) System.out.println("Bet cannot be less than £0.");
+            if (bet > BettingSystem.balance) System.out.println("Not eneough money to place bet.");
+            System.out.println("Try again.");
+            bet = inputDouble(statement);
+        }
+        System.out.println("Bet has been placed.");
+        BettingSystem.removeLoss(bet);
+        System.out.println("Current Balance: "+BettingSystem.balance+"\n");
+        return bet;
     }
 }

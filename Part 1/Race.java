@@ -71,6 +71,7 @@ public class Race extends UserInput {
             createHorses();
         }
 
+        askToPlaceBet();
         resetHorsesPosition();
 
         while (!finishedSimulation) {
@@ -85,6 +86,7 @@ public class Race extends UserInput {
             showWinner();
             resetHorsesPosition();
             showRaceDetails();
+            removeAllBets();
 
             finishedSimulation = askYesNo("\nSTOP SIMULATION:  yes [1], no [0]: ");
             if (!finishedSimulation) {
@@ -92,9 +94,55 @@ public class Race extends UserInput {
                 if (askYesNo("\nWould you like to make changes to the next simulation yes [1], no [0]: ")) {
                     changeRaceDetails();
                 }
+                askToPlaceBet();
             }
         }
     }
+
+    private void askToPlaceBet() {
+        if (askYesNo("\n\nWould you like to bet on a horse yes [1] no [0]: ")) {
+            checkWinnings();
+        }
+    }
+
+    private void removeAllBets() {
+        for (Horse horse : horses) {
+            horse.setBetPlacedOn(false);
+            horse.setWinnings(0.0);
+        }
+    }
+
+    private void chooseHorseToPlaceBetOn() {
+        String name = inputString("Enter the name of the horse you want to place the bet on: ");
+        while (true) {
+            for (Horse horse : horses) {
+                if (horse == null) continue;
+                if (horse.getName().equals(name)) {
+                    horse.setBetPlacedOn(true);
+                    return;
+                }
+            }
+            System.out.println("Invalid Name.");
+            name = inputString("Enter the name of the horse you want to place the bet on: ");
+        }
+    }
+
+    /**
+     * calculate how much money the user would win
+     * if their choice of horse wins
+     * 
+     */
+    private void checkWinnings() {
+        System.out.println("The balance: "+BettingSystem.balance);
+        double usersBet = placeBet("How much money are you putting on this race: ");
+        if (usersBet == 0.0) return;
+        for (Horse horse : horses) {
+            horse.setWinnings(BettingSystem.calculateWinnings(horse, usersBet));
+            System.out.println("If "+horse.getName()+" wins then the payout will be £"+horse.getWinnings());
+        }
+        chooseHorseToPlaceBetOn();
+    }
+
 
     private void askUserToGenerateRandomHorse() {
         boolean input = askYesNo("\nWould you like to add a randomly generated horse into the race? yes [1] no [0]: ");
@@ -242,7 +290,7 @@ public class Race extends UserInput {
             addHorses();
             addHorsesToLanes();
         }
-        if (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
+        while (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
             saveHorse();
             showHorseDetailsFromFile();
         }
@@ -427,7 +475,7 @@ public class Race extends UserInput {
      * Initializes the horses and lanes for the race.
      */
     private void createHorses() {
-        int inputLanes = chooseNumberOfLanes("\nHow many lanes would you like [2, 8]: ");
+        int inputLanes = chooseNumberOfLanes("How many lanes would you like [2 - 8]: ");
         for (int numberOfLanes = horses.size(); numberOfLanes < inputLanes; numberOfLanes++) {
             horses.add(numberOfLanes, null);
             uniqueHorseNames.add(numberOfLanes, null);
@@ -456,8 +504,16 @@ public class Race extends UserInput {
                 System.out.println("\n\n"+horse.getName()+" has won the Race!");
                 horse.setConfidence(horse.getConfidence()*1.1);
                 horse.setTotalWins(horse.getTotalWins()+1);
+                if (horse.isBetPlacedOn()) {
+                    BettingSystem.balance = horse.getWinnings();
+                    System.out.println("Current balance: "+BettingSystem.balance);
+                }
             } else {
                 horse.setConfidence(horse.getConfidence()*0.9);
+                if (horse.isBetPlacedOn()) {
+                    System.out.println("The horse you placed the bet on has lost");
+                    System.out.println("Current balance: "+BettingSystem.balance);
+                }
             }
             horse.setWinRate(horse.getTotalWins(), horse.getTotalRaces());
             HorseDetailsFileHandling.updateHorseInFile(horse);
