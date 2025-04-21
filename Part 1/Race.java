@@ -467,12 +467,14 @@ public class Race extends UserInput {
      */
     private void addLanes() {
         horses.add(null);
+        uniqueHorseNames.add(null);
         boolean done = false;
         while (horses.size() <= 8 && !done) {
             System.out.println("\nThere are currently "+horses.size()+" lanes.");
             done = askYesNo("Would you like to add a lane yes [1], no [0]");
             if (done) {
                 horses.add(null);
+                uniqueHorseNames.add(null);
                 done = false;
             } else {
                 done = true;
@@ -529,7 +531,7 @@ public class Race extends UserInput {
             addHorses();
             addHorsesToLanes();
         }
-        while (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
+        while (askYesNo("\n\nWould you like to save any of the horse details yes [1], no [0]: ")) {
             saveHorse();
             showHorseDetailsFromFile();
         }
@@ -586,7 +588,9 @@ public class Race extends UserInput {
                 System.out.println("Lane "+lane+" is taken by another horse.");
                 lane = pickOneOfTheLanes("\nChoose a lane to add this horse to [1 - "+inputLanes+"]: ", inputLanes);
             }
-            horses.set(lane-1, createHorse(lane));
+            Horse horse = createHorse(lane);
+            horses.set(lane-1, horse);
+            uniqueHorseNames.set(lane-1, horse.getName());
         }
     }
 
@@ -604,7 +608,7 @@ public class Race extends UserInput {
                 horse.setConfidence(horse.getConfidence()*1.1);
                 horse.setTotalWins(horse.getTotalWins()+1);
                 if (horse.isBetPlacedOn()) {
-                    BettingSystem.balance = horse.getWinnings();
+                    BettingSystem.balance += horse.getWinnings();
                     System.out.println("Current balance: "+BettingSystem.balance);
                 }
             } else {

@@ -299,7 +299,6 @@ public class Horse {
         this.winRate = (total == 0) ? 0.0 : wins / total;
     }
 
-
     /**
      * Retrieves the current possible winnings of a horse
      * @return double The amount of money a horse could win

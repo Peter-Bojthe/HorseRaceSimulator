@@ -14,7 +14,7 @@ public class BettingSystem {
      * @return return the possible winnings by the hore
      */
     public static double calculateWinnings(Horse horse, double bet) {
-        return ((horse.getConfidence()+horse.getWinRate()+1.1)*bet);
+        return ((horse.getConfidence()+horse.getWinRate()+1.1)*bet)+bet;
     }
 
     /**
@@ -33,4 +33,3 @@ public class BettingSystem {
         balance = balance - lostMoney;
     }
 }
-
