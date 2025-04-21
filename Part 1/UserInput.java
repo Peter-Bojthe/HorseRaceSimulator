@@ -33,6 +33,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      * @param statement the prompt message to display to the user.
      * @return the validated double input from the user.
      */
+    @Override
     public double inputDouble(String statement) {
         String input = inputString(statement);
         boolean valid = validateDouble(input);
@@ -50,7 +51,8 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      * @return true if the input is a valid double, false otherwise.
      */
     @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")
-    private boolean validateDouble(String input) {
+    @Override
+    public boolean validateDouble(String input) {
         if (input == null || input.trim().isEmpty()) {
             return false;
         }
@@ -77,6 +79,17 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
             valid = validateCharacter(input);
         }
         return input.charAt(0);
+    }
+
+    /**
+     * Validates if the input string is a valid character.
+     * 
+     * @param input the string to validate.
+     * @return true if the input is a valid character, false otherwise.
+     */
+    @Override
+    public boolean validateCharacter(String input) {
+        return (input.length() != 0);
     }
 
     /**
@@ -110,21 +123,10 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
     }
 
     /**
-     * Validates if the input string is a valid character.
-     * 
-     * @param input the string to validate.
-     * @return true if the input is a valid character, false otherwise.
-     */
-    @Override
-    public boolean validateCharacter(String input) {
-        return (input.length() != 0);
-    }
-
-    /**
      * Prompts the user for a yes/no input and validates it.
      * 
      * @param statement the prompt message to display to the user.
-     * @return true if the user input is "1" (yes), false if "2" (no).
+     * @return true if the user input is "1" (yes), false if "0" (no).
      */
     @Override
     public boolean askYesNo(String statement) {
@@ -141,7 +143,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      * Validates if the input is a valid yes/no response.
      * 
      * @param input the string to validate.
-     * @return true if the input is "1" or "2", false otherwise.
+     * @return true if the input is "1" or "0", false otherwise.
      */
     @Override
     public boolean yesNo(String input) {
@@ -157,18 +159,17 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
     @Override
     public int chooseTrackLength(String statement) {
         int input = inputNumber(statement);
-        while (input < 3 || input > 100) {
+        while (input < 25 || input > 100) {
             input = inputNumber(statement);
         }
         return input;
     }
 
-    /*
+    /**
+     * Prompts the user to choose a horse
      * 
-     * 
-     * 
-     * 
-     * 
+     * @param statement the prompt message to display to the user.
+     * @return the validated horse number
      */
     @Override
     public int pickAnyHorse(String statement) {
@@ -184,6 +185,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      * Prompts the user to pick a lane and validates it.
      * 
      * @param statement the prompt message to display to the user.
+     * @param max the maximum number of lanes currently used.
      * @return the validated lane number input from the user.
      */
     @Override
@@ -246,6 +248,13 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         return input;
     }
 
+    /**
+     * this method ask for the amount the user want to spend on the race and 
+     * returns this value
+     * @param statement the prompt given to the user
+     * @return the amount of money put on the race
+     */
+    @Override
     public double placeBet(String statement) {
         if (BettingSystem.balance == 0.0) {
             System.out.println("Balance is £0. Cannot place Bets.");

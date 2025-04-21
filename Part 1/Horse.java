@@ -19,8 +19,8 @@ public class Horse {
     private int totalRaces;                // Counter for the total number of races
     private int totalWins;                 // Counter for the number of wins
     private double winRate;                // total wins divided by the total races
-    private double winnings = 0.0;         // the money won by the user if the horse wins (initially 0)
-    private boolean betPlacedOn = false;   // if the user has put a bet on a horse then true
+    private double winnings;               // the money won by the user if the horse wins (initially 0)
+    private boolean betPlacedOn;           // if the user has put a bet on a horse then true
 
     // Fields of Class Horse
     static int horseCounter;           // Static counter to track the number of horses created
@@ -31,10 +31,13 @@ public class Horse {
      * The distance traveled is set to 0, and the horse starts as not fallen.
      * Confidence is clamped between 0.0 and 1.0.
      *
-     * @param horseSymbol    the character symbol representing the horse.
-     * @param horseName      the name of the horse.
-     * @param horseConfidence the confidence rating of the horse (0.0 to 1.0).
-     * @param laneNumber     the lane number assigned to the horse.
+     * @param horseName String representation of the horse's unique identifier
+     * @param horseConfidence double representation of confidence value (0.0-1.0)
+     * @param horseSymbol character containing single character visual representation
+     * @param totalWins integer representation of lifetime victory count
+     * @param totalRaces integer representation of lifetime race participation
+     * @param winRate double representation of win percentage (0.0-1.0)
+     * @param lane integer representing the lane number of the horse
      */
     public Horse(String horseName, double horseConfidence, char horseSymbol, int totalWins, int totalRaces, double winRate, int laneNumber) {
         this.horseName = horseName;
@@ -58,14 +61,19 @@ public class Horse {
 
         this.horseDistance = 0;
         this.horseFallen = false;
+
+        this.betPlacedOn = false; 
+        this.winnings = 0.0;
+        
         horseCounter++;
     }
 
     /**
      * Constructs a Horse object from file-derived string data.
-     * This constructor is specifically designed for instantiating horses
-     * from persisted file storage, where all attributes are stored as strings.
-     * Performs data validation and type conversion while initializing all horse properties.
+     * Constructor for objects of class Horse.
+     * Initializes the horse with a symbol, name, confidence rating, and lane number.
+     * The distance traveled is set to 0, and the horse starts as not fallen.
+     * Confidence is clamped between 0.0 and 1.0.
      *
      * @param horseName String representation of the horse's unique identifier
      * @param horseConfidence String representation of confidence value (0.0-1.0)
@@ -73,6 +81,7 @@ public class Horse {
      * @param totalWins String representation of lifetime victory count
      * @param totalRaces String representation of lifetime race participation
      * @param winRate String representation of win percentage (0.0-1.0)
+     * @param lane integer representing the lane number of the horse
      */
     public Horse(String horseName, String horseConfidence, String horseSymbol, String totalWins, String totalRaces, String winRate, int lane) {
         this.horseName = horseName;
@@ -96,6 +105,8 @@ public class Horse {
 
         this.horseDistance = 0;
         this.horseFallen = false;
+        this.betPlacedOn = false; 
+        this.winnings = 0.0;
         horseCounter++; 
     }
 
@@ -181,18 +192,14 @@ public class Horse {
 
     /**
      * Advances the horse's position by one unit along the race track.
-     * This method unconditionally increments the distance regardless of the horse's state.
-     * For race simulation integrity, callers should typically check hasFallen() first.
      */
     public void moveForward() {
-        this.horseDistance += 1;  // Using compound assignment for clarity
+        this.horseDistance += 1;
     }
 
     /**
      * Updates the horse's confidence rating with value
      * Confidence values are constrained to the range [0.0, 1.0] and rounded to 2 decimal places
-     * for consistent simulation behavior, out-of-range values are automatically clamped
-     * to the nearest valid value
      * 
      * @param newConfidence The new confidence level
      */
@@ -224,7 +231,7 @@ public class Horse {
      * @return Total wins as a non-negative integer
      */
     public int getTotalWins() {
-        return totalWins;
+        return this.totalWins;
     }
 
     /**
@@ -246,7 +253,7 @@ public class Horse {
      * @return Total races as a non-negative integer
      */
     public int getTotalRaces() {
-        return totalRaces;
+        return this.totalRaces;
     }
 
     /**
@@ -263,6 +270,15 @@ public class Horse {
             throw new IllegalArgumentException("Race count cannot be less than win count");
         }
         this.totalRaces = totalRaces;
+    }
+
+    /**
+     * Retrieves the current win rate percentage.
+     * 
+     * @return Win rate as a decimal between 0.0 (0%) and 1.0 (100%)
+     */
+    public double getWinRate() {
+        return this.winRate;
     }
 
     /**
@@ -283,27 +299,37 @@ public class Horse {
         this.winRate = (total == 0) ? 0.0 : wins / total;
     }
 
+
     /**
-     * Retrieves the current win rate percentage.
-     * 
-     * @return Win rate as a decimal between 0.0 (0%) and 1.0 (100%)
+     * Retrieves the current possible winnings of a horse
+     * @return double The amount of money a horse could win
      */
-    public double getWinRate() {
-        return this.winRate;
-    }
-
     public double getWinnings() {
-        return winnings;
+        return this.winnings;
     }
 
+    /**
+     * Set the winnings of a horse to 2 decimal places
+     * @param winnings type double number we are settign winnings to
+     */
     public void setWinnings(double winnings) {
         this.winnings = Math.round(winnings * 100.0) / 100.0;
     }
 
+    /**
+     * Retrieves the boolean flag which determines
+     * if the user has placed a bet on this horse
+     * @return boolean which checks if the horse has had a bet placed on it
+     */
     public boolean isBetPlacedOn() {
-        return betPlacedOn;
+        return this.betPlacedOn;
     }
 
+    /**
+     * Set the variable to true or false
+     * @param betPlacedOn type boolean which determines if a horse has
+     * had a bet placed on it
+     */
     public void setBetPlacedOn(boolean betPlacedOn) {
         this.betPlacedOn = betPlacedOn;
     }

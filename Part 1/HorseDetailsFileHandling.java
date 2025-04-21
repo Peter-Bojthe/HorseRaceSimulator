@@ -16,10 +16,7 @@ import java.util.List;
  * @version 16/04/25
  */
 public class HorseDetailsFileHandling {
-    /** The name of the CSV file used for storing horse details */
     private static final String FILE_NAME = "SavingHorseDetails.csv";
-    
-    /** Expected number of columns in the CSV file */
     private static final int EXPECTED_COLUMNS = 6;
     
     /**
@@ -36,8 +33,7 @@ public class HorseDetailsFileHandling {
      * @throws IOException If an I/O error occurs
      * @throws IllegalArgumentException If any parameter is invalid
      */
-    public static void saveHorseDetails(String name, double confidence, char character,
-                                    int win, int total, double winRate) throws IOException {
+    public static void saveHorseDetails(String name, double confidence, char character, int win, int total, double winRate) throws IOException {
         // Parameter validation
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Horse name cannot be null or empty");
@@ -68,14 +64,14 @@ public class HorseDetailsFileHandling {
 
         // Save the new horse
         try (PrintWriter horseFile = new PrintWriter(new FileWriter(file, true))) {
-            horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n",
-                            name, confidence, character, win, total, winRate);
+            horseFile.printf("%s,%.2f,%c,%d,%d,%.2f%n",name, confidence, character, win, total, winRate);
         }
     }
 
     /**
      * Update the saved horse details after every race
      * Finds horse based on name (name is unique) and updates all of its details
+     * @param horse The horse which will be updated in the file... IF it is in the file already.
      */
     public static void updateHorseInFile(Horse horse) throws IOException {
         List<String> lines = new ArrayList<>();
@@ -142,6 +138,8 @@ public class HorseDetailsFileHandling {
      *
      * @param lineNumber The 1-based line number to retrieve
      * @return String array containing horse details, or null if line doesn't exist
+     * validation happens before method call.
+     * (invalid line number will not be passed to this method)
      * @throws IOException If an I/O error occurs
      * @throws IllegalArgumentException If lineNumber is invalid
      */
@@ -193,7 +191,7 @@ public class HorseDetailsFileHandling {
 
     /**
      * Displays all horse details in a formatted table with borders.
-     * Handles malformed data gracefully and provides clear error messages.
+     * provides clear error messages if error happens
      */
     public static void printFormattedTable() {
         try {

@@ -81,4 +81,13 @@ interface UserOptionInterface {
      * @return the validated lane number chosen by the user.
      */
     public int pickOneOfTheLanes(String statement, int max);
+
+    /**
+     * Prompts the user to place a bet on the race
+     * 
+     * 
+     * @param statement prompt to the user
+     * @return the validated bet plaed on the race (double)
+     */
+    public double placeBet(String statement);
 }

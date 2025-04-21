@@ -15,92 +15,13 @@ import java.util.concurrent.TimeUnit;
 public class Race extends UserInput {
     private int raceLength;
     private String raceCondition = "Sunny";
+
     static ArrayList<Horse> horses = new ArrayList<>();
     static ArrayList<String> uniqueHorseNames = new ArrayList<>();
 
     /**
-     * Constructor for objects of class Race
-     * Initially, there are no horses in the lanes
-     */
-    public Race() {
-        // Initialize instance variables
-        // Empty Constructor
-        // Race details chosen by User
-    }
-
-    /**
-     * Names must be unique
-     * check if nameis taken
-     * 
-     */
-    private boolean usedName(String name) {
-        for (int i = 0; i < uniqueHorseNames.size(); i++) {
-            if (name.equals(uniqueHorseNames.get(i))) {
-                System.out.println("\nHorse name taken. Choose another name.");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * weather during race
-     * race conditions
-     * effects horse' confidence
-     */
-    private void raceConditions() {
-        Random random = new Random();
-
-        String[] weatherConditions = {"Raining", "Wet", "Sunny", "Snow"};
-        double[] weatherConditionsEffect = {0.25, 0.15, 1, 0.50};
-
-        int chosen = random.nextInt(weatherConditions.length);
-        String newWeatherCondition = weatherConditions[chosen];
-        double change = weatherConditionsEffect[chosen];
-
-        if (raceCondition.equals(newWeatherCondition)) {
-            System.out.println("\n\nWeather conditions have not changed. ("+raceCondition+")");
-            return;
-        }
-
-        changeHorseConfidenceDueToConditions(newWeatherCondition, change);
-    }
-
-    /**
-     * 
-     * Change horse confidence
-     * and output information about the weather
-     * @param weather new weather condition
-     * @param change the scale factor by which the horse confidence will be 
-     */
-    private void changeHorseConfidenceDueToConditions(String weather, double change) {
-        switch (weather) {
-            case "Raining" -> System.out.println("\nHorse confidence is decreased by 0.25, due to rain.");
-            case "Wet"     -> System.out.println("\nHorse confidence is decreased by 0.15, due to a wet track.");
-            case "Sunny"   -> System.out.println("\nHorse confidence is not affected, it is sunny.");
-            case "Snow"    -> System.out.println("\nHorse confidence is decreased by 0.50 due to snow.");
-        }
-        for (Horse horse : horses) {
-            if (horse == null) continue;
-            horse.setConfidence(horse.getConfidence()*change);
-        }
-        raceCondition = weather;
-    }
-
-    /**
-     * Adds horses to their respective lanes based on their position in the list.
-     */
-    private void addHorsesToLanes() {
-        for (int i = 0; i < horses.size(); i++) {
-            if (horses.get(i) == null) continue;
-            horses.get(i).setLaneNumber(i+1);
-        }
-    }
-
-    /**
      * Starts the race simulation.
      * Horses are brought to the start and repeatedly moved forward until the race is finished.
-     * 
      * @throws IOException if there is an input/output (File Handling) error during the race simulation.
      */
     public void startRace() throws IOException {
@@ -110,7 +31,6 @@ public class Race extends UserInput {
         chooseSavedHorse();
         askUserToGenerateRandomHorse();
         raceLength = chooseTrackLength("\nChoose the length of race [25m - 100m]: ");
-
         // Only Create Horses if 2 or more horses have not yet bee chosen
         if (horses.size() <= 1) {
             createHorses();
@@ -119,7 +39,6 @@ public class Race extends UserInput {
         raceConditions();
         askToPlaceBet();
         resetHorsesPosition();
-
         while (!finishedSimulation) {
             // Before Race;
             try {
@@ -166,12 +85,10 @@ public class Race extends UserInput {
         }
     }
 
-    private void askToPlaceBet() {
-        if (askYesNo("\n\nWould you like to bet on a horse yes [1] no [0]: ")) {
-            checkWinnings();
-        }
-    }
-
+    /**
+     * Reset all the variables related to the 
+     * Betting System
+     */
     private void removeAllBets() {
         for (Horse horse : horses) {
             if (horse == null) continue;
@@ -180,6 +97,11 @@ public class Race extends UserInput {
         }
     }
 
+    /**
+     * User must enter the name of a horse 
+     * If they have said they want to place a bet
+     * Name must exist within the horses currently racing
+     */
     private void chooseHorseToPlaceBetOn() {
         String name = inputString("Enter the name of the horse you want to place the bet on: ");
         while (true) {
@@ -212,7 +134,63 @@ public class Race extends UserInput {
         chooseHorseToPlaceBetOn();
     }
 
+    /**
+     * Ask the user if they want to place a bet
+     */
+    private void askToPlaceBet() {
+        if (askYesNo("\n\nWould you like to bet on a horse yes [1] no [0]: ")) {
+            checkWinnings();
+        }
+    }
 
+    /**
+     * weather during race race conditions affects horse' confidence
+     */
+    private void raceConditions() {
+        Random random = new Random();
+
+        String[] weatherConditions = {"Raining", "Wet", "Sunny", "Snow"};
+        double[] weatherConditionsEffect = {0.75, 0.85, 1, 0.50};
+
+        int chosen = random.nextInt(weatherConditions.length);
+        String newWeatherCondition = weatherConditions[chosen];
+        double change = weatherConditionsEffect[chosen];
+
+        if (raceCondition.equals(newWeatherCondition)) {
+            System.out.println("\n\nWeather conditions have not changed. ("+raceCondition+")");
+            return;
+        }
+
+        changeHorseConfidenceDueToConditions(newWeatherCondition, change);
+    }
+
+    /**
+     * 
+     * Change horse confidence
+     * and output information about the weather
+     * @param weather new weather condition
+     * @param change the scale factor by which the horse confidence will be 
+     */
+    private void changeHorseConfidenceDueToConditions(String weather, double change) {
+        switch (weather) {
+            case "Raining" -> System.out.println("\nHorse confidence is decreased by 25%, due to rain.");
+            case "Wet"     -> System.out.println("\nHorse confidence is decreased by 15%, due to a wet track.");
+            case "Sunny"   -> System.out.println("\nHorse confidence is not affected, it is sunny.");
+            case "Snow"    -> System.out.println("\nHorse confidence is decreased by 50% due to snow.");
+        }
+        for (Horse horse : horses) {
+            if (horse == null) continue;
+            horse.setConfidence(horse.getConfidence()*change);
+        }
+        raceCondition = weather;
+    }
+
+    /**
+     * Ask the user if they want random horses
+     * Ask how many they want
+     * add as many of those horses as possible considering how many empty lanes there are
+     * if all lanes fill up and all horses cannot be addded then tell the user.
+     */
     private void askUserToGenerateRandomHorse() {
         boolean input = askYesNo("\nWould you like to add a randomly generated horse into the race? yes [1] no [0]: ");
         if (!input) return;
@@ -242,8 +220,11 @@ public class Race extends UserInput {
      * Generates a random horse with a randomly generated name and character
      * @return A new Horse object with random attributes
      */
-    private static Horse generateRandomHorse() {
+    private Horse generateRandomHorse() {
         String name = generateRandomHorseName();
+        while (usedName(name)) {
+            name = generateRandomHorseName();
+        }
         char character = generateRandomAlphanumericChar();
         Horse randomHorse = new Horse(name, 0.25, character, 0, 0, 0.0, Horse.horseCounter+1);
         System.out.println("\n\nRandom Horse: ");
@@ -256,7 +237,7 @@ public class Race extends UserInput {
      * Generates a random horse name by combining prefixes and suffixes
      * @return A randomly generated horse name
      */
-    private static String generateRandomHorseName() {
+    private String generateRandomHorseName() {
         String[] prefixes = {
             "Thunder", "Midnight", "Shadow", "Lightning", "Silver", 
             "Golden", "Diamond", "Black", "White", "Red",
@@ -282,9 +263,9 @@ public class Race extends UserInput {
      * Generates a random alphanumeric character (A-Z, a-z, 0-9)
      * @return A random character
      */
-    private static char generateRandomAlphanumericChar() {
+    private char generateRandomAlphanumericChar() {
         Random random = new Random();
-        int choice = random.nextInt(3); // 0-2
+        int choice = random.nextInt(3); // 0, 1, 2
 
         return (char) (switch (choice) {
             case 0 -> random.nextInt(26) + 65;
@@ -294,6 +275,11 @@ public class Race extends UserInput {
         });
     }
 
+    /**
+     * Ask the user if they want to use a horse from the file
+     * 
+     * @throws IOException I/O Error
+     */
     private void chooseSavedHorse() throws IOException {
         boolean answer = askYesNo("\nWould you like to use a previously saved horse yes [1], no [0]: ");
         if (answer) {
@@ -306,6 +292,12 @@ public class Race extends UserInput {
         }
     }
 
+    /**
+     * Ask for a line in the file
+     * Create a horse with those details
+     * 
+     * @throws IOException I/O Error
+     */
     private void askUserToChooseHorseFromFile() throws IOException {
         int numberOfSavedHorses = HorseDetailsFileHandling.countFileLines();
         if (numberOfSavedHorses >=1 ) {
@@ -322,54 +314,14 @@ public class Race extends UserInput {
         }
     }
 
+
+    /**
+     * Print the formated table for all the horses
+     * which are saved in files
+     */
     private void showHorseDetailsFromFile() {
         System.out.println("\n\n\nSaved Horses: ");
         HorseDetailsFileHandling.printFormattedTable();
-    }
-
-    /**
-     * Displays the current race details including length, number of lanes, and horses.
-     */
-    private void showRaceDetails() {
-        System.out.println("\nCurrent length of the race: "+raceLength);
-        System.out.println("Current number of lanes: "+horses.size());
-        System.out.println("Current number of horses: "+Horse.horseCounter+"\n\n");
-        for (Horse horse : horses) {
-            if (horse == null) continue;
-            System.out.print(horse.getName()+" is in lane "+horse.getLaneNumber());
-            System.out.println(", Confidence: "+horse.getConfidence());
-        }
-        System.out.println("\n");
-    }
-
-    /**
-     * Allows the user to change race details such as removing or adding lanes, removing or adding horses, and changing the race length.
-    * @throws IOException 
-    */
-    private void changeRaceDetails() throws IOException {
-        if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) {
-            removeLanes();
-            addHorsesToLanes();
-        }
-        if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) {
-            addLanes();
-            addHorsesToLanes();
-        }
-        if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) {
-            removeHorses();
-            addHorsesToLanes();
-        }
-        if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) {
-            addHorses();
-            addHorsesToLanes();
-        }
-        while (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
-            saveHorse();
-            showHorseDetailsFromFile();
-        }
-        if (askYesNo("\n\nWould you like to change the length of the race yes [1], no [0]: ")) {
-             raceLength = chooseTrackLength("Length of Race [25m - 100m]: ");
-        }
     }
 
     /*
@@ -397,6 +349,119 @@ public class Race extends UserInput {
         }
     }
 
+    /**
+     * Adds horses to their respective lanes based on their position in the list.
+     */
+    private void addHorsesToLanes() {
+        for (int i = 0; i < horses.size(); i++) {
+            if (horses.get(i) == null) continue;
+            horses.get(i).setLaneNumber(i+1);
+        }
+    }
+
+    /**
+     * Names must be unique
+     * check if name is taken
+     * 
+     */
+    private boolean usedName(String name) {
+        for (int i = 0; i < uniqueHorseNames.size(); i++) {
+            if (name.equals(uniqueHorseNames.get(i))) {
+                System.out.println("\nHorse name taken. Choose another name.");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Counts the number of lanes with horses.
+     * 
+     * @return the number of lanes with horses.
+     */
+    private int horseLanes() {
+        int count = 0;
+        for (Horse horse : horses) {
+            if (horse != null) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Checks if all lanes are occupied by horses.
+     * 
+     * @return true if all lanes are occupied, false otherwise.
+     */
+    private boolean fullLanes() {
+        for (Horse horse : horses) {
+            if (horse == null) return false;
+        }
+        System.out.println("\nAll lanes taken");
+        return true;
+    }
+
+    /**
+     * Displays lanes that are empty.
+     */
+    private void showEmptyLanes() {
+        System.out.println("\nEmpty Lanes: ");
+        for (int i = 0; i < horses.size(); i++) {
+            if (horses.get(i) != null) continue;
+            int emptyLane = i+1;
+            System.out.println("Empty Lane: "+emptyLane);
+        }
+    }
+
+    /**
+     * Adds horses to the race.
+     */
+    private void addHorses() {
+        boolean done = false;
+        while (!fullLanes() && !done) {
+            showEmptyLanes();
+            int input = pickOneOfTheLanes("\nEnter the lane number you want to add a horse to: ", horses.size());
+            if (input-1 > horses.size() || horses.get(input-1) != null) {
+                System.out.println("Invalid Lane or Taken Lane.");
+            } else {
+                Horse horse = createHorse(input);
+                horses.set(input-1, horse);
+                uniqueHorseNames.set(input-1, horse.getName());
+                Horse.horseCounter++;
+                done = askYesNo("Stop adding horses yes [1], no [0]: "); 
+            }
+        }
+    }
+
+    /**
+     * Displays lanes that are occupied by horses.
+     */
+    private void showFullLanes() {
+        System.out.println("\nLanes with Horses: ");
+        for (int i = 0; i < horses.size(); i++) {
+            if (horses.get(i) == null) continue;
+            int fullLane = i+1;
+            System.out.println("This lane has a horse: "+fullLane);
+        }
+    }
+
+    /**
+     * Removes horses from the race.
+     */
+    private void removeHorses() {
+        boolean done = false;
+        while (horseLanes() >= 2  && !done) {
+            showFullLanes();
+            int input = pickOneOfTheLanes("\nEnter the lane number of the horse you want to remove: ", horses.size());
+            if (input-1 > horses.size() || horses.get(input-1) == null) {
+                System.out.println("Invalid Choice of Lane.");
+            } else {
+                horses.set(input-1, null);
+                uniqueHorseNames.set(input-1, null);
+                Horse.horseCounter--;
+                done = askYesNo("\nStop removing horses yes [1], no [0]: ");
+            }
+        }
+    }
     /**
      * Adds lanes to the race.
      */
@@ -444,88 +509,48 @@ public class Race extends UserInput {
     }
 
     /**
-     * Removes horses from the race.
-     */
-    private void removeHorses() {
-        boolean done = false;
-        while (horseLanes() >= 2  && !done) {
-            showFullLanes();
-            int input = pickOneOfTheLanes("\nEnter the lane number of the horse you want to remove: ", horses.size());
-            if (input-1 > horses.size() || horses.get(input-1) == null) {
-                System.out.println("Invalid Choice of Lane.");
-            } else {
-                horses.set(input-1, null);
-                uniqueHorseNames.set(input-1, null);
-                Horse.horseCounter--;
-                done = askYesNo("\nStop removing horses yes [1], no [0]: ");
-            }
+     * Allows the user to change race details such as removing or adding lanes, removing or adding horses, and changing the race length.
+    * @throws IOException 
+    */
+    private void changeRaceDetails() throws IOException {
+        if (askYesNo("\n\nWould you like to Remove any lanes yes [1], no [0]: ")) {
+            removeLanes();
+            addHorsesToLanes();
+        }
+        if (askYesNo("\n\nWould you like to Add any lanes yes [1], no [0]: ")) {
+            addLanes();
+            addHorsesToLanes();
+        }
+        if (askYesNo("\n\nWould you like to Remove any horses yes [1], no [0]: ")) {
+            removeHorses();
+            addHorsesToLanes();
+        }
+        if (askYesNo("\n\nWould you like to Add any horses yes [1], no [0]: ")) {
+            addHorses();
+            addHorsesToLanes();
+        }
+        while (askYesNo("\n\nWould yo like to save any of the horse details yes [1], no [0]: ")) {
+            saveHorse();
+            showHorseDetailsFromFile();
+        }
+        if (askYesNo("\n\nWould you like to change the length of the race yes [1], no [0]: ")) {
+             raceLength = chooseTrackLength("Length of Race [25m - 100m]: ");
         }
     }
 
     /**
-     * Counts the number of lanes with horses.
-     * 
-     * @return the number of lanes with horses.
+     * Displays the current race details including length, number of lanes, and horses.
      */
-    private int horseLanes() {
-        int count = 0;
+    private void showRaceDetails() {
+        System.out.println("\nCurrent length of the race: "+raceLength);
+        System.out.println("Current number of lanes: "+horses.size());
+        System.out.println("Current number of horses: "+Horse.horseCounter+"\n\n");
         for (Horse horse : horses) {
-            if (horse != null) count++;
+            if (horse == null) continue;
+            System.out.print(horse.getName()+" is in lane "+horse.getLaneNumber());
+            System.out.println(", Confidence: "+horse.getConfidence());
         }
-        return count;
-    }
-
-    /**
-     * Checks if all lanes are occupied by horses.
-     * 
-     * @return true if all lanes are occupied, false otherwise.
-     */
-    private boolean fullLanes() {
-        for (Horse horse : horses) {
-            if (horse == null) return false;
-        }
-        System.out.println("\nAll lanes taken");
-        return true;
-    }
-
-    /**
-     * Adds horses to the race.
-     */
-    private void addHorses() {
-        boolean done = false;
-        while (!fullLanes() && !done) {
-            showEmptyLanes();
-            int input = pickOneOfTheLanes("\nEnter the lane number you want to add a horse to: ", horses.size());
-            if (input-1 > horses.size() || horses.get(input-1) != null) {
-                System.out.println("Invalid Lane or Taken Lane.");
-            } else {
-                horses.set(input-1, createHorse(input));
-                Horse.horseCounter++;
-                done = askYesNo("Stop adding horses yes [1], no [0]: "); 
-            }
-        }
-    }
-
-    /**
-     * Displays lanes that are occupied by horses.
-     */
-    private void showFullLanes() {
-        System.out.println("\nLanes with Horses: ");
-        for (int i = 0; i < horses.size(); i++) {
-            if (horses.get(i) == null) continue;
-            System.out.println(i+1);
-        }
-    }
-
-    /**
-     * Displays lanes that are empty.
-     */
-    private void showEmptyLanes() {
-        System.out.println("\nEmpty Lanes: ");
-        for (int i = 0; i < horses.size(); i++) {
-            if (horses.get(i) != null) continue;
-            System.out.println(i+1);
-        }
+        System.out.println("\n");
     }
 
     /**
@@ -568,6 +593,7 @@ public class Race extends UserInput {
     /**
      * Displays the winner of the race and adjusts the confidence of the horses.
      * And adjust the total races, total wins, and win rate of the horse
+     * Updates the user balance if they have placed a bet on the race
      */
     private void showWinner() throws IOException {
         for (Horse horse : horses) {

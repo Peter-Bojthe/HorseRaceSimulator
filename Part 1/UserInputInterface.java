@@ -19,6 +19,14 @@ interface UserInputInterface {
     public int inputNumber(String statement);
 
     /**
+     * Prompts the user to input a number (double) and validates it.
+     *
+     * @param statement the prompt message to display to the user.
+     * @return the validated double input from the user.
+     */
+    public double inputDouble(String statement);
+
+    /**
      * Prompts the user to input a single character and validates it.
      *
      * @param statement the prompt message to display to the user.
@@ -49,4 +57,12 @@ interface UserInputInterface {
      * @return true if the input is a valid single character, false otherwise.
      */
     public boolean validateCharacter(String input);
+
+    /**
+     * Validates if the input string represents a valid double.
+     *
+     * @param input the string to validate.
+     * @return true if the input is a valid double, false otherwise.
+     */
+    public boolean validateDouble(String input);
 }
