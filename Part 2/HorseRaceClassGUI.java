@@ -1,297 +1,353 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 
 /**
- * A graphical horse race simulator that allows users to configure and run races.
+ * GUI-based horse race simulator with straight and oval tracks.
  * 
  * @author Peter Bojthe
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class HorseRaceClassGUI {
-    private static final int RACE_LENGTH = 50;   // The length of the race track in units
-    private JFrame frame;                        // The main application window 
-    private JTextArea raceArea;                  // Text area displaying the race visualization
-    private final ArrayList<HorseGUI> horses;    // List of horses participating in the race
-    private int numberOfLanes;                   // Total number of available lanes
-    private int numberOfHorses;                  // Number of horses in the current race
-    private Timer raceTimer;                     // Timer controlling the race progression
+    private enum TrackType {STRAIGHT, OVAL}
+    private int trackLength = 20;
+    private TrackType trackType = TrackType.STRAIGHT;
+    private int numberOfLanes = 2;
+    private int numberOfHorses = 2;
+    private final List<HorseGUI> horses = new ArrayList<>();
+    private boolean raceFinished = false;
+    private JFrame frame;
+    private JTextArea raceDisplay;
+    private Timer raceTimer;
+    private List<HorseGUI> originalHorses = new ArrayList<>();
 
-    /**
-     * Main entry point for the application.
-     * 
-     * @param args Command line arguments
-     */
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(HorseRaceClassGUI::new);
+        SwingUtilities.invokeLater(() -> new HorseRaceClassGUI().start());
     }
 
     /**
-     * Constructs a new horse race simulator and shows the configuration window.
+     * Launches the configuration dialog to set up a new race.
      */
-    public HorseRaceClassGUI() {
-        horses = new ArrayList<>();
-        showConfigurationWindow();
+    public void start() {
+        showConfigurationDialog();
     }
 
     /**
-     * Displays the initial configuration window where users set up the race parameters.
-     * Allows setting the number of lanes and horses.
+     * Display to configure race parameters like track type, length, lanes, and horses.
      */
     @SuppressWarnings("unused")
-    private void showConfigurationWindow() {
-        frame = new JFrame("Horse Race Simulator Configuration");
-        frame.setSize(400, 300);
+    private void showConfigurationDialog() {
+        frame = new JFrame("Horse Race Configuration");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
 
-        JPanel configPanel = new JPanel(new GridLayout(4, 2, 10, 10));
-        configPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Configuration UI elements
-        JLabel laneLabel = new JLabel("Number of Lanes (2-8):");
+        JComboBox<TrackType> trackTypeCombo = new JComboBox<>(TrackType.values());
+        JSpinner lengthSpinner = new JSpinner(new SpinnerNumberModel(50, 20, 100, 5));
         JSpinner laneSpinner = new JSpinner(new SpinnerNumberModel(4, 2, 8, 1));
-
-        JLabel horseLabel = new JLabel("Number of Horses (2+):");
         JSpinner horseSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 8, 1));
 
-        JButton nextButton = new JButton("Enter Horse Details");
+        panel.add(new JLabel("Track Type:")); panel.add(trackTypeCombo);
+        panel.add(new JLabel("Track Length (20-100):")); panel.add(lengthSpinner);
+        panel.add(new JLabel("Number of Lanes (2-8):")); panel.add(laneSpinner);
+        panel.add(new JLabel("Number of Horses (2+):")); panel.add(horseSpinner);
+        panel.add(new JLabel());
 
-        configPanel.add(laneLabel);
-        configPanel.add(laneSpinner);
-        configPanel.add(horseLabel);
-        configPanel.add(horseSpinner);
-        configPanel.add(new JLabel());
-        configPanel.add(nextButton);
+        JButton startButton = new JButton("Start Race");
+        panel.add(startButton);
 
-        frame.add(configPanel, BorderLayout.CENTER);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-
-        nextButton.addActionListener(e -> {
+        startButton.addActionListener(e -> {
+            trackType = (TrackType) trackTypeCombo.getSelectedItem();
+            trackLength = (Integer) lengthSpinner.getValue();
             numberOfLanes = (Integer) laneSpinner.getValue();
             numberOfHorses = (Integer) horseSpinner.getValue();
 
             if (numberOfHorses > numberOfLanes) {
-                JOptionPane.showMessageDialog(frame, "Number of horses cannot exceed number of lanes.");
+                JOptionPane.showMessageDialog(frame, "Cannot have more horses than lanes!");
                 return;
             }
 
             frame.dispose();
-            horses.clear();
-            promptHorseDetails();
-        });
-    }
-
-    /**
-     * Prompts the user to enter details for each horse in the race.
-     * Collects name, symbol, and lane assignment for each horse.
-     */
-    private void promptHorseDetails() {
-        for (int i = 0; i < numberOfHorses; i++) {
-            String name = JOptionPane.showInputDialog(null, "Enter name for Horse " + (i + 1) + ":");
-            if (name == null || name.isEmpty()) name = "Horse" + (i + 1);
-
-            String symbolStr = JOptionPane.showInputDialog(null, "Enter ONE character for " + name + ":");
-            while (symbolStr == null || symbolStr.length() != 1) {
-                symbolStr = JOptionPane.showInputDialog(null, "Invalid input. Enter ONE character for " + name + ":");
-            }
-            char symbol = symbolStr.charAt(0);
-
-            int lane = -1;
-            while (lane < 1 || lane > numberOfLanes || isLaneTaken(lane)) {
-                String laneStr = JOptionPane.showInputDialog(null, "Choose a lane for " + name + " (1 to " + numberOfLanes + "):");
-                try {
-                    lane = Integer.parseInt(laneStr);
-                } catch (NumberFormatException ignored) {
-                    lane = -1;
-                }
-                if (isLaneTaken(lane)) {
-                    JOptionPane.showMessageDialog(null, "Lane already taken. Choose another.");
-                    lane = -1;
-                }
-            }
-            horses.add(new HorseGUI(name, symbol, 0.25, lane));
-        }
-
-        showRaceWindow();
-        runRace();
-    }
-
-    /**
-     * Checks if a specific lane is already occupied by another horse.
-     * 
-     * @param lane The lane number to check
-     * @return true if the lane is already taken, false otherwise
-     */
-    private boolean isLaneTaken(int lane) {
-        for (HorseGUI h : horses) {
-            if (h.getLaneNumber() == lane) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Displays the main race window with the race visualization area.
-     */
-    @SuppressWarnings("unused")
-    private void showRaceWindow() {
-        frame = new JFrame("Horse Race Simulator");
-        frame.setSize(1000, 800);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-
-        raceArea = new JTextArea();
-        raceArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        raceArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(raceArea);
-        frame.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel buttonPanel = new JPanel();
-        JButton restartButton = new JButton("Restart");
-        JButton exitButton = new JButton("Exit");
-
-        restartButton.addActionListener(e -> {
-            frame.dispose();
-            SwingUtilities.invokeLater(() -> new HorseRaceClassGUI());
+            setupRace();
         });
 
-        exitButton.addActionListener(e -> System.exit(0));
-
-        buttonPanel.add(restartButton);
-        buttonPanel.add(exitButton);
-        frame.add(buttonPanel, BorderLayout.SOUTH);
-
+        frame.add(panel);
+        frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     /**
-     * Starts the race simulation with a timer that updates the race state periodically.
+     * Prompts user to configure each horse and assigns them to a lane.
+     */
+    private void setupRace() {
+        horses.clear();
+
+        for (int i = 0; i < numberOfHorses; i++) {
+            String name = JOptionPane.showInputDialog("Enter name for Horse " + (i + 1) + ":");
+            if (name == null || name.trim().isEmpty()) name = "Horse " + (i + 1);
+
+            String symbol;
+            do {
+                symbol = JOptionPane.showInputDialog("Enter symbol for " + name + " (single character):");
+            } while (symbol == null || symbol.length() != 1);
+
+            int lane;
+            do {
+                try {
+                    lane = Integer.parseInt(JOptionPane.showInputDialog("Assign lane (1-" + numberOfLanes + ") for " + name + ":"));
+                } catch (NumberFormatException e) {
+                    lane = -1;
+                }
+            } while (lane < 1 || lane > numberOfLanes || isLaneTaken(lane));
+
+            HorseGUI horse = new HorseGUI(name, symbol.charAt(0), 0.25, lane);
+            horses.add(horse);
+        }
+
+        // Clone horses for replay
+        originalHorses = new ArrayList<>();
+        for (HorseGUI h : horses) {
+            originalHorses.add(new HorseGUI(h.getName(), h.getSymbol(), h.getConfidence(), h.getLane()));
+        }
+
+        createRaceWindow();
+        startRace();
+    }
+
+    /**
+     * Checks if a lane is already taken.
+     * @param lane the lane to check
+     * @return true if the lane is taken
+     */
+    private boolean isLaneTaken(int lane) {
+        return horses.stream().anyMatch(h -> h.getLane() == lane);
+    }
+
+    /**
+     * Creates and displays the main race window for the GUI-based horse race simulator.
      */
     @SuppressWarnings("unused")
-    private void runRace() {
-        raceTimer = new Timer(10, e -> {
-            boolean allFell = true;
-            boolean raceFinished = false;
+    private void createRaceWindow() {
+        frame = new JFrame("Horse Race");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            // Update each horse's position
-            for (HorseGUI horse : horses) {
-                if (!horse.isHorseFallen() && horse.getHorseDistance() < RACE_LENGTH) {
-                    moveHorse(horse);
-                }
-                if (!horse.isHorseFallen()) {
-                    allFell = false;
-                }
-                if (horse.getHorseDistance() >= RACE_LENGTH) {
-                    raceFinished = true;
-                }
-            }
+        raceDisplay = new JTextArea();
+        raceDisplay.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        raceDisplay.setEditable(false);
 
-            printRace();
+        JScrollPane scrollPane = new JScrollPane(raceDisplay);
+        frame.add(scrollPane, BorderLayout.CENTER);
 
-            // Check race completion conditions
-            if (raceFinished || allFell) {
-                raceTimer.stop();
-                announceWinner(raceFinished ? getWinner() : null);
-            }
+        JButton restartButton = new JButton("Restart");
+        JButton replayButton = new JButton("Replay");
+
+        restartButton.addActionListener(e -> {
+            frame.dispose();
+            new HorseRaceClassGUI().start();
         });
+
+        replayButton.addActionListener(e -> {
+            frame.dispose();
+            replayRaceWithSameHorses();
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(restartButton);
+        buttonPanel.add(replayButton);
+        frame.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Resize window based on track length and lanes
+        SwingUtilities.invokeLater(() -> {
+            FontMetrics fm = raceDisplay.getFontMetrics(raceDisplay.getFont());
+
+            int maxLineLength = trackLength + 30; 
+            int charWidth = fm.charWidth('M');  
+            int charHeight = fm.getHeight();     
+
+            int width = charWidth * (maxLineLength + 4);
+            int height = charHeight * (numberOfLanes + 8);
+            frame.setSize(width, height);
+
+            frame.setResizable(false);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
+    }
+
+
+    /**
+     * Replays the race using the same horse configurations (name, symbol, confidence, lane)
+     */
+    private void replayRaceWithSameHorses() {
+        List<HorseGUI> previousHorses = new ArrayList<>(horses);
+        horses.clear();
+
+        for (HorseGUI oldHorse : previousHorses) {
+            horses.add(new HorseGUI(
+                oldHorse.getName(),
+                oldHorse.getSymbol(),
+                oldHorse.getConfidence(),
+                oldHorse.getLane()
+            ));
+        }
+
+        raceFinished = false;
+        createRaceWindow();
+        startRace();
+    }
+
+    /**
+     * Starts the race timer and handles horse movement and falling.
+     */
+    @SuppressWarnings("unused")
+    private void startRace() {
+        raceTimer = new Timer(100, e -> {
+            if (raceFinished) return;
+
+            for (HorseGUI horse : horses) {
+                if (!horse.hasFallen()) {
+                    if (Math.random() < horse.getConfidence()) horse.moveForward();
+
+                    if (trackType == TrackType.OVAL) {
+                        int lapLength = trackLength * 2;
+                        if (horse.getDistance() > 0 && horse.getDistance() % lapLength == 0)
+                            horse.completeLap();
+                    }
+
+                    if (Math.random() < 0.1 * horse.getConfidence() * horse.getConfidence()) horse.fall();
+                }
+            }
+
+            updateDisplay();
+            checkRaceCompletion();
+        });
+
         raceTimer.start();
     }
 
     /**
-     * Moves a horse forward or makes it fall based on its confidence.
-     * 
-     * @param horse The horse to move
+     * Updates the race display in the GUI.
      */
-    private void moveHorse(HorseGUI horse) {
-        if (!horse.isHorseFallen()) {
-            if (Math.random() < horse.getHorseConfidence()) {
-                horse.setHorseDistance(horse.getHorseDistance() + 1);
+    private void updateDisplay() {
+        StringBuilder sb = new StringBuilder();
+
+        if (trackType == TrackType.STRAIGHT) {
+            sb.append("=".repeat(trackLength + 2)).append("\n");
+
+            for (int lane = 1; lane <= numberOfLanes; lane++) {
+                HorseGUI horse = getHorseInLane(lane);
+                sb.append("|");
+
+                if (horse != null) {
+                    int pos = Math.min(horse.getDistance(), trackLength);
+                    sb.append(" ".repeat(pos))
+                      .append(horse.hasFallen() ? '?' : horse.getSymbol())
+                      .append(" ".repeat(trackLength - pos));
+                } else {
+                    sb.append(" ".repeat(trackLength));
+                }
+
+                sb.append("| ");
+                if (horse != null) {
+                    sb.append("Lane ").append(horse.getLane()).append(": ").append(horse.getName()).append(" (Confidence: ").append((int)(horse.getConfidence() * 100)).append("%)");
+                } else {
+                    sb.append("Empty Lane");
+                }
+                sb.append("\n");
             }
-            if (Math.random() < 0.1 * horse.getHorseConfidence() * horse.getHorseConfidence()) {
-                horse.setHorseFallen(true);
-            }
-        }
-    }
 
-    /**
-     * Generates and displays the current race state in the text area.
-     */
-    private void printRace() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("=".repeat(RACE_LENGTH + 3)).append("\n");
-
-        for (int i = 1; i <= numberOfLanes; i++) {
-            HorseGUI h = getHorseInLane(i);
-            builder.append(printLane(h)).append("\n");
-        }
-
-        builder.append("=".repeat(RACE_LENGTH + 3)).append("\n");
-        raceArea.setText(builder.toString());
-    }
-
-    /**
-     * Gets the horse in a specific lane.
-     * 
-     * @param laneNumber The lane number to check
-     * @return The horse in the specified lane, or null if empty
-     */
-    private HorseGUI getHorseInLane(int laneNumber) {
-        for (HorseGUI horse : horses) {
-            if (horse.getLaneNumber() == laneNumber) {
-                return horse;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Generates the string representation of a single lane.
-     * 
-     * @param horse The horse in the lane (null if empty)
-     * @return Formatted string representing the lane's current state
-     */
-    private String printLane(HorseGUI horse) {
-        StringBuilder sb = new StringBuilder("|");
-        if (horse == null) {
-            sb.append(" ".repeat(RACE_LENGTH + 1)).append("| Empty Lane");
+            sb.append("=".repeat(trackLength + 2)).append("\n");
         } else {
-            int before = horse.getHorseDistance();
-            int after = RACE_LENGTH - before;
-            sb.append(" ".repeat(before));
-            sb.append(horse.isHorseFallen() ? '⌢' : horse.getHorseSymbol());
-            sb.append(" ".repeat(after));
-            sb.append("| Lane ").append(horse.getLaneNumber());
-            sb.append(": ").append(horse.getHorseName());
-            sb.append(" (Conf: ").append(String.format("%.2f", horse.getHorseConfidence())).append(")");
+            // Oval track display
+            sb.append(" ").append("=".repeat(trackLength + 1)).append("\n");
+
+            for (int lane = 1; lane <= numberOfLanes; lane++) {
+                HorseGUI horse = getHorseInLane(lane);
+                sb.append("(");
+
+                if (horse != null) {
+                    int lapProgress = horse.getDistance() % (trackLength * 2);
+                    boolean goingRight = lapProgress < trackLength;
+                    int displayPos = goingRight ? lapProgress : (trackLength * 2 - lapProgress);
+
+                    sb.append(" ".repeat(displayPos))
+                      .append(horse.hasFallen() ? '?' : horse.getSymbol())
+                      .append(" ".repeat(trackLength - displayPos));
+                } else {
+                    sb.append(" ".repeat(trackLength + 1));
+                }
+
+                sb.append(") ");
+                if (horse != null) {
+                    sb.append("Lane ").append(horse.getLane()).append(": ").append(horse.getName()).append(" (Confidence: ").append((int)(horse.getConfidence() * 100)).append("%)");
+                } else {
+                    sb.append("Empty Lane");
+                }
+                sb.append("\n");
+            }
+
+            sb.append(" ").append("=".repeat(trackLength + 1)).append("\n");
         }
-        return sb.toString();
+
+        raceDisplay.setText(sb.toString());
     }
 
     /**
-     * Determines the winning horse if the race has finished.
-     * 
-     * @return The winning horse, or null if no winner yet
+     * Finds a horse assigned to a specific lane.
+     * @param lane the lane number
+     * @return the horse assigned to the lane (or null)
      */
-    private HorseGUI getWinner() {
+    private HorseGUI getHorseInLane(int lane) {
+        return horses.stream().filter(h -> h.getLane() == lane).findFirst().orElse(null);
+    }
+
+    /**
+     * Checks if the race is over and a winner exists.
+     */
+    private void checkRaceCompletion() {
+        boolean someoneFinished = false;
+        boolean allFallen = true;
+    
         for (HorseGUI horse : horses) {
-            if (horse.getHorseDistance() >= RACE_LENGTH && !horse.isHorseFallen()) {
-                return horse;
+            if (!horse.hasFallen()) {
+                allFallen = false;
+    
+                if (trackType == TrackType.STRAIGHT && horse.getDistance() >= trackLength) {
+                    someoneFinished = true;
+                    break;
+                } else if (trackType == TrackType.OVAL && horse.getLapsCompleted() >= 1) {
+                    someoneFinished = true;
+                    break;
+                }
             }
         }
-        return null;
+    
+        if (someoneFinished || allFallen) {
+            raceFinished = true;
+            raceTimer.stop();
+            announceWinner();
+        }
     }
-
+    
     /**
-     * Announces the race winner or no winner if all horses fell.
-     * 
-     * @param winner The winning horse, or null if no winner
+     * Displays a message announcing the race winner or no winner if all horses fell.
      */
-    private void announceWinner(HorseGUI winner) {
-        String message = (winner == null)
-                ? "All horses have fallen! No winner."
-                : "🏁 " + winner.getHorseName() + " has won the race!";
+    private void announceWinner() {
+        HorseGUI winner = horses.stream()
+            .filter(h -> !h.hasFallen())
+            .filter(h -> trackType == TrackType.STRAIGHT ?
+                h.getDistance() >= trackLength :
+                h.getLapsCompleted() >= 1)
+            .findFirst()
+            .orElse(null);
+
+        String message = (winner != null)
+            ? "🏆 Winner: " + winner.getName() + "! 🏆"
+            : "All horses fell! No winner.";
+
         JOptionPane.showMessageDialog(frame, message);
     }
 }

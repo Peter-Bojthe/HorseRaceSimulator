@@ -1,131 +1,63 @@
 /**
- * Represents a horse
+ * Represents a horse participating in the race.
  * 
  * @author Peter Bojthe
- * @version 1.0.0
+ * @version 1.0.2
  */
 public class HorseGUI {
-    private char horseSymbol;              // Symbol representing the horse in the race display
-    private final String horseName;        // Name of the horse (immutable after creation)
-    private double horseConfidence;        // Confidence level of the horse (0.0 to 1.0)
-    private int horseDistance;             // Distance the horse has traveled in the race
-    private boolean horseFallen;           // Flag indicating if the horse has fallen
-    private int laneNumber;                // Lane number where the horse is racing
+    private final char symbol;             // Symbol representing the horse in the race display
+    private final String name;             // Name of the horse (immutable after creation)
+    private final double confidence;       // Confidence level of the horse (0.0 to 1.0)
+    private int distance;                  // Distance the horse has traveled in the race
+    private boolean fallen;                // Flag indicating if the horse has fallen
+    private final int lane;                // Lane number where the horse is racing    
+    private int lapsCompleted;             // Laps required for Oval Track
 
     /**
-     * Constructs a new HorseGUI instance with specified attributes.
+     * Constructs a new horse.
      * 
-     * @param name The name of the horse
-     * @param symbol The character symbol representing the horse
-     * @param confidence The initial confidence level (0.0 to 1.0)
-     * @param lane The lane number where the horse will race
+     * @param name horse's name
+     * @param symbol character symbol for the horse
+     * @param confidence how likely the horse is to move
+     * @param lane track lane the horse is in
      */
     public HorseGUI(String name, char symbol, double confidence, int lane) {
-        this.horseName = name;
-        this.horseSymbol = symbol;
-        this.horseConfidence = confidence;
-        this.laneNumber = lane;
-
-        this.horseDistance = 0;
-        this.horseFallen = false;
+        this.name = name;
+        this.symbol = symbol;
+        this.confidence = confidence;
+        this.lane = lane;
+        this.distance = 0;
+        this.fallen = false;
+        this.lapsCompleted = 0;
     }
 
-    /**
-     * Gets the lane number where the horse is racing.
-     * 
-     * @return The lane number of this horse
-     */
-    public int getLaneNumber() {
-        return laneNumber;
-    }
+    /** Advances the horse forward by 1 unit. */
+    public void moveForward() { distance++; }
 
-    /**
-     * Sets the lane number for this horse.
-     * 
-     * @param laneNumber The new lane number to set
-     */
-    public void setLaneNumber(int laneNumber) {
-        this.laneNumber = laneNumber;
-    }
+    /** Marks a lap completed (for oval tracks). */
+    public void completeLap() { lapsCompleted++; }
 
-    /**
-     * Checks if the horse has fallen during the race.
-     * 
-     * @return true if the horse has fallen, false otherwise
-     */
-    public boolean isHorseFallen() {
-        return horseFallen;
-    }
+    /** Marks the horse as fallen. */
+    public void fall() { fallen = true; }
 
-    /**
-     * Sets the fallen status of the horse.
-     * 
-     * @param horseFallen true to mark the horse as fallen, false otherwise
-     */
-    public void setHorseFallen(boolean horseFallen) {
-        this.horseFallen = horseFallen;
-    }
+    /** @return the horse's name */
+    public String getName() { return name; }
 
-    /**
-     * Gets the distance the horse has traveled in the race.
-     * 
-     * @return The current distance traveled by the horse
-     */
-    public int getHorseDistance() {
-        return horseDistance;
-    }
+    /** @return the symbol representing the horse */
+    public char getSymbol() { return symbol; }
 
-    /**
-     * Sets the distance the horse has traveled in the race.
-     * 
-     * @param horseDistance The new distance value to set
-     */
-    public void setHorseDistance(int horseDistance) {
-        this.horseDistance = horseDistance;
-    }
+    /** @return the confidence level (0.0–1.0) */
+    public double getConfidence() { return confidence; }
 
-    /**
-     * Gets the current confidence level of the horse.
-     * 
-     * @return The horse's confidence level (0.0 to 1.0)
-     */
-    public double getHorseConfidence() {
-        return horseConfidence;
-    }
+    /** @return the assigned track lane */
+    public int getLane() { return lane; }
 
-    /**
-     * Sets the confidence level of the horse.
-     * 
-     * @param horseConfidence The new confidence level (0.0 to 1.0)
-     */
-    public void setHorseConfidence(double horseConfidence) {
-        this.horseConfidence = horseConfidence;
-    }
+    /** @return how far the horse has traveled */
+    public int getDistance() { return distance; }
 
-    /**
-     * Gets the name of the horse.
-     * 
-     * @return The horse's name
-     */
-    public String getHorseName() {
-        return horseName;
-    }
+    /** @return true if the horse has fallen */
+    public boolean hasFallen() { return fallen; }
 
-    /**
-     * Gets the symbol representing the horse.
-     * 
-     * @return The horse's display symbol
-     */
-    public char getHorseSymbol() {
-        return horseSymbol;
-    }
-
-    /**
-     * Sets the symbol representing the horse.
-     * 
-     * @param horseSymbol The new character symbol for the horse
-     */
-    public void setHorseSymbol(char horseSymbol) {
-        this.horseSymbol = horseSymbol;
-    }
+    /** @return number of laps completed (for oval tracks) */
+    public int getLapsCompleted() { return lapsCompleted; }
 }
