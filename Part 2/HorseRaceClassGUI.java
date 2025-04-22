@@ -1,13 +1,15 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 
 /**
  * GUI-based horse race simulator with straight and oval tracks.
  * 
  * @author Peter Bojthe
- * @version 1.0.2
+ * @version 1.0.3
  */
 public class HorseRaceClassGUI {
     private enum TrackType {STRAIGHT, OVAL}
@@ -20,7 +22,6 @@ public class HorseRaceClassGUI {
     private JFrame frame;
     private JTextArea raceDisplay;
     private Timer raceTimer;
-    private List<HorseGUI> originalHorses = new ArrayList<>();
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new HorseRaceClassGUI().start());
@@ -35,95 +36,175 @@ public class HorseRaceClassGUI {
 
     /**
      * Display to configure race parameters like track type, length, lanes, and horses.
+     * Displays the race and horse configuration window.
+     * Users select track type, length, number of lanes, and define each horse.
      */
     @SuppressWarnings("unused")
     private void showConfigurationDialog() {
         frame = new JFrame("Horse Race Configuration");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout(10, 10));
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        JPanel settingsPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        settingsPanel.setBorder(BorderFactory.createTitledBorder("Track Settings"));
 
         JComboBox<TrackType> trackTypeCombo = new JComboBox<>(TrackType.values());
         JSpinner lengthSpinner = new JSpinner(new SpinnerNumberModel(50, 20, 100, 5));
         JSpinner laneSpinner = new JSpinner(new SpinnerNumberModel(4, 2, 8, 1));
         JSpinner horseSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 8, 1));
 
-        panel.add(new JLabel("Track Type:")); panel.add(trackTypeCombo);
-        panel.add(new JLabel("Track Length (20-100):")); panel.add(lengthSpinner);
-        panel.add(new JLabel("Number of Lanes (2-8):")); panel.add(laneSpinner);
-        panel.add(new JLabel("Number of Horses (2+):")); panel.add(horseSpinner);
-        panel.add(new JLabel());
+        settingsPanel.add(new JLabel("Track Type:"));
+        settingsPanel.add(trackTypeCombo);
+        settingsPanel.add(new JLabel("Track Length (20 - 100):"));
+        settingsPanel.add(lengthSpinner);
+        settingsPanel.add(new JLabel("Number of Lanes (2 - 8):"));
+        settingsPanel.add(laneSpinner);
+        settingsPanel.add(new JLabel("Number of Horses (2 - 8):"));
+        settingsPanel.add(horseSpinner);
+
+        // Panel to hold horse input rows
+        JPanel horsesPanel = new JPanel();
+        horsesPanel.setLayout(new BoxLayout(horsesPanel, BoxLayout.Y_AXIS));
+        horsesPanel.setBorder(BorderFactory.createTitledBorder("Horse Details"));
+
+        List<JTextField> nameFields = new ArrayList<>();
+        List<JComboBox<String>> symbolBoxes = new ArrayList<>();
+        List<JComboBox<Integer>> laneBoxes = new ArrayList<>();
+
+        horseSpinner.addChangeListener(e -> updateHorseInputs(
+            horsesPanel, nameFields, symbolBoxes, laneBoxes, horseSpinner, laneSpinner));
+        laneSpinner.addChangeListener(e -> updateHorseInputs(
+            horsesPanel, nameFields, symbolBoxes, laneBoxes, horseSpinner, laneSpinner));
+        updateHorseInputs(horsesPanel, nameFields, symbolBoxes, laneBoxes, horseSpinner, laneSpinner);
+        
 
         JButton startButton = new JButton("Start Race");
-        panel.add(startButton);
-
         startButton.addActionListener(e -> {
             trackType = (TrackType) trackTypeCombo.getSelectedItem();
             trackLength = (Integer) lengthSpinner.getValue();
             numberOfLanes = (Integer) laneSpinner.getValue();
             numberOfHorses = (Integer) horseSpinner.getValue();
 
-            if (numberOfHorses > numberOfLanes) {
-                JOptionPane.showMessageDialog(frame, "Cannot have more horses than lanes!");
-                return;
+            // Validate lane assignments
+            Set<Integer> takenLanes = new HashSet<>();
+            horses.clear();
+
+            for (int i = 0; i < numberOfHorses; i++) {
+                String name = nameFields.get(i).getText().trim();
+                if (name.isEmpty()) name = "Horse " + (i + 1);
+
+                char symbol = symbolBoxes.get(i).getSelectedItem().toString().charAt(0);
+                int lane = (Integer) laneBoxes.get(i).getSelectedItem();
+
+                if (takenLanes.contains(lane)) {
+                    JOptionPane.showMessageDialog(frame, "Lane " + lane + " is assigned to multiple horses.");
+                    return;
+                }
+
+                takenLanes.add(lane);
+                horses.add(new HorseGUI(name, symbol, 0.25, lane));  // Default confidence: 0.25
             }
 
             frame.dispose();
-            setupRace();
+            createRaceWindow();
+            startRace();
         });
 
-        frame.add(panel);
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomPanel.add(startButton);
+
+        // Assemble full layout
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.add(settingsPanel);
+        centerPanel.add(Box.createVerticalStrut(10));
+        centerPanel.add(horsesPanel);
+
+        frame.add(centerPanel, BorderLayout.CENTER);
+        frame.add(bottomPanel, BorderLayout.SOUTH);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     /**
-     * Prompts user to configure each horse and assigns them to a lane.
+     * Updates the horse input fields based on the number of horses and lanes.
+     *
+     * @param horsesPanel   Panel to which horse input rows are added
+     * @param nameFields    List to collect name text fields
+     * @param symbolBoxes   List to collect emoji combo boxes
+     * @param laneBoxes     List to collect lane number combo boxes
+     * @param horseSpinner  Spinner that defines the number of horses
+     * @param laneSpinner   Spinner that defines the number of lanes
      */
-    private void setupRace() {
-        horses.clear();
+    @SuppressWarnings("unused")
+    private void updateHorseInputs(JPanel horsesPanel, List<JTextField> nameFields, List<JComboBox<String>> symbolBoxes, List<JComboBox<Integer>> laneBoxes, JSpinner horseSpinner, JSpinner laneSpinner) {
+        horsesPanel.removeAll();
+        nameFields.clear();
+        symbolBoxes.clear();
+        laneBoxes.clear();
 
-        for (int i = 0; i < numberOfHorses; i++) {
-            String name = JOptionPane.showInputDialog("Enter name for Horse " + (i + 1) + ":");
-            if (name == null || name.trim().isEmpty()) name = "Horse " + (i + 1);
+        int horseCount = (Integer) horseSpinner.getValue();
+        int laneCount = (Integer) laneSpinner.getValue();
+        String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘", "🐓"};
 
-            String symbol;
-            do {
-                symbol = JOptionPane.showInputDialog("Enter symbol for " + name + " (single character):");
-            } while (symbol == null || symbol.length() != 1);
+        // Name generation components
+        String[] prefixes = {"Thunder", "Midnight", "Shadow", "Lightning", "Silver", 
+                            "Golden", "Diamond", "Black", "White", "Red",
+                            "Wild", "Crazy", "Majestic", "Royal", "Brave",
+                            "Flying", "Dancing", "Galloping", "Mystic", "Spirit"};
 
-            int lane;
-            do {
-                try {
-                    lane = Integer.parseInt(JOptionPane.showInputDialog("Assign lane (1-" + numberOfLanes + ") for " + name + ":"));
-                } catch (NumberFormatException e) {
-                    lane = -1;
-                }
-            } while (lane < 1 || lane > numberOfLanes || isLaneTaken(lane));
+        String[] suffixes = {"hoof", "mane", "tail", "storm", "fire",
+                            "wind", "blaze", "dancer", "chaser", "runner",
+                            "prince", "king", "queen", "star", "moon",
+                            "sun", "dream", "whisper", "shadow", "flash"};
 
-            HorseGUI horse = new HorseGUI(name, symbol.charAt(0), 0.25, lane);
-            horses.add(horse);
+        for (int i = 0; i < horseCount; i++) {
+            JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+            JTextField nameField = new JTextField("Horse " + (i + 1), 10);
+            JComboBox<String> emojiBox = new JComboBox<>(emojiOptions);
+            JComboBox<Integer> laneBox = new JComboBox<>();
+            JButton randomButton = new JButton("Random");
+
+            // Populate lane options
+            for (int l = 1; l <= laneCount; l++) {
+                laneBox.addItem(l);
+            }
+
+            // Set up random button action
+            randomButton.addActionListener(e -> {
+                // Generate random name
+                String randomName = prefixes[(int)(Math.random() * prefixes.length)] +" "+ suffixes[(int)(Math.random() * suffixes.length)];
+                nameField.setText(randomName);
+
+                // Select random emoji
+                emojiBox.setSelectedIndex((int)(Math.random() * emojiOptions.length));
+
+                // // Select random available lane
+                // if (laneBox.getItemCount() > 0) {
+                //     int randomLaneIndex = (int)(Math.random() * laneBox.getItemCount());
+                //     laneBox.setSelectedIndex(randomLaneIndex);
+                // }
+            });
+
+            row.add(new JLabel("Name:"));
+            row.add(nameField);
+            row.add(new JLabel("Emoji:"));
+            row.add(emojiBox);
+            row.add(new JLabel("Lane:"));
+            row.add(laneBox);
+            row.add(randomButton);
+
+            nameFields.add(nameField);
+            symbolBoxes.add(emojiBox);
+            laneBoxes.add(laneBox);
+            horsesPanel.add(row);
         }
 
-        // Clone horses for replay
-        originalHorses = new ArrayList<>();
-        for (HorseGUI h : horses) {
-            originalHorses.add(new HorseGUI(h.getName(), h.getSymbol(), h.getConfidence(), h.getLane()));
-        }
-
-        createRaceWindow();
-        startRace();
-    }
-
-    /**
-     * Checks if a lane is already taken.
-     * @param lane the lane to check
-     * @return true if the lane is taken
-     */
-    private boolean isLaneTaken(int lane) {
-        return horses.stream().anyMatch(h -> h.getLane() == lane);
+        horsesPanel.revalidate();
+        horsesPanel.repaint();
+        frame.pack();
     }
 
     /**
@@ -163,7 +244,7 @@ public class HorseRaceClassGUI {
         SwingUtilities.invokeLater(() -> {
             FontMetrics fm = raceDisplay.getFontMetrics(raceDisplay.getFont());
 
-            int maxLineLength = trackLength + 30; 
+            int maxLineLength = trackLength + 50; 
             int charWidth = fm.charWidth('M');  
             int charHeight = fm.getHeight();     
 
@@ -176,7 +257,6 @@ public class HorseRaceClassGUI {
             frame.setVisible(true);
         });
     }
-
 
     /**
      * Replays the race using the same horse configurations (name, symbol, confidence, lane)
