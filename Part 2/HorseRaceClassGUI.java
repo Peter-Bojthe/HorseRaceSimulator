@@ -93,7 +93,7 @@ public class HorseRaceClassGUI {
                 String name = nameFields.get(i).getText().trim();
                 if (name.isEmpty()) name = "Horse " + (i + 1);
 
-                char symbol = symbolBoxes.get(i).getSelectedItem().toString().charAt(0);
+                String symbol = symbolBoxes.get(i).getSelectedItem().toString();
                 int lane = (Integer) laneBoxes.get(i).getSelectedItem();
 
                 if (takenLanes.contains(lane)) {
@@ -102,7 +102,7 @@ public class HorseRaceClassGUI {
                 }
 
                 takenLanes.add(lane);
-                horses.add(new HorseGUI(name, symbol, 0.25, lane));  // Default confidence: 0.25
+                horses.add(new HorseGUI(name, symbol, 0.15, lane));  // Default confidence: 0.15
             }
 
             frame.dispose();
@@ -324,7 +324,7 @@ public class HorseRaceClassGUI {
                 if (horse != null) {
                     int pos = Math.min(horse.getDistance(), trackLength);
                     sb.append(" ".repeat(pos))
-                      .append(horse.hasFallen() ? '?' : horse.getSymbol())
+                      .append(horse.hasFallen() ? "\u274C" : horse.getSymbol())
                       .append(" ".repeat(trackLength - pos));
                 } else {
                     sb.append(" ".repeat(trackLength));
@@ -354,7 +354,7 @@ public class HorseRaceClassGUI {
                     int displayPos = goingRight ? lapProgress : (trackLength * 2 - lapProgress);
 
                     sb.append(" ".repeat(displayPos))
-                      .append(horse.hasFallen() ? '?' : horse.getSymbol())
+                      .append(horse.hasFallen() ? "\u274C" : horse.getSymbol())
                       .append(" ".repeat(trackLength - displayPos));
                 } else {
                     sb.append(" ".repeat(trackLength + 1));

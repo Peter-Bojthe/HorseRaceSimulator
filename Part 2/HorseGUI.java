@@ -5,7 +5,7 @@
  * @version 1.0.2
  */
 public class HorseGUI {
-    private final char symbol;             // Symbol representing the horse in the race display
+    private final String symbol;             // Symbol representing the horse in the race display
     private final String name;             // Name of the horse (immutable after creation)
     private final double confidence;       // Confidence level of the horse (0.0 to 1.0)
     private int distance;                  // Distance the horse has traveled in the race
@@ -21,7 +21,7 @@ public class HorseGUI {
      * @param confidence how likely the horse is to move
      * @param lane track lane the horse is in
      */
-    public HorseGUI(String name, char symbol, double confidence, int lane) {
+    public HorseGUI(String name, String symbol, double confidence, int lane) {
         this.name = name;
         this.symbol = symbol;
         this.confidence = confidence;
@@ -44,7 +44,7 @@ public class HorseGUI {
     public String getName() { return name; }
 
     /** @return the symbol representing the horse */
-    public char getSymbol() { return symbol; }
+    public String getSymbol() { return symbol; }
 
     /** @return the confidence level (0.0–1.0) */
     public double getConfidence() { return confidence; }
