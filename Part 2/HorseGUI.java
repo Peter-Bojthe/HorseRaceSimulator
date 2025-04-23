@@ -13,6 +13,11 @@ public class HorseGUI {
     private final int lane;                // Lane number where the horse is racing    
     private int lapsCompleted;             // Laps required for Oval Track
 
+    // Horse Success Attributes
+    private double winRate;                // the win-rate of the horse
+    private int wins;                      // total number of wins
+    private int races;                     // total number of races
+
     // Attributes affecting confidence
     private String breed;                  // Breed of the horse
     private String coatColour;             // Fur colour of the horse
@@ -27,7 +32,7 @@ public class HorseGUI {
      * @param confidence how likely the horse is to move
      * @param lane track lane the horse is in
      */
-    public HorseGUI(String name, String symbol, double confidence, int lane, String breed, String coatColour, String saddle, String shoes) {
+    public HorseGUI(String name, String symbol, double confidence, int lane, String breed, String coatColour, String saddle, String shoes, int wins, int races) {
         this.name = name;
         this.symbol = symbol;
         this.confidence = confidence;
@@ -36,10 +41,18 @@ public class HorseGUI {
         this.coatColour = coatColour;
         this.saddle = saddle;
         this.shoes = shoes;
+        this.winRate = calculateWinRate(wins, races);
+        this.wins = wins;
+        this.races = races;
 
         this.distance = 0;
         this.fallen = false;
         this.lapsCompleted = 0;
+    }
+
+    public static double calculateWinRate(int wins, int races) {
+        if (races == 0) { return 0.0; }
+        return Math.round(wins*100.0) / (100.0*races);
     }
 
     /** Advances the horse forward by 1 unit. */
@@ -95,4 +108,22 @@ public class HorseGUI {
 
     /** sets the type of shoes on the horse */
     public void setShoes(String shoes) { this.shoes = shoes; }
+
+    /** @return the win rate of the horse */
+    public double getWinRate() { return winRate; }
+
+    /** sets the win rate of the horse @param wins total wins @param races total races */
+    public void setWinRate(int wins, int races) { this.winRate = Math.round(wins*100.0)/(100.0*races); }
+
+    /** @return the number of wins the horse has */
+    public int getWins() { return wins; }
+
+    /** sets the number of wins the horse has */
+    public void setWins(int wins) { this.wins = wins; }
+
+    /** @return the number of races the horse has had */
+    public int getRaces() { return races; }
+
+    /** sets the number of races the horse has had */
+    public void setRaces(int races) { this.races = races; }
 }

@@ -1,9 +1,11 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  * GUI-based horse race simulator with straight and oval tracks.
@@ -116,7 +118,7 @@ public class HorseRaceClassGUI {
                 double finalConfidence = calculateFinalConfidence(breed, coatColour, saddle, horseShoe, weatherType);
 
                 takenLanes.add(lane);
-                horses.add(new HorseGUI(name, symbol, finalConfidence, lane, breed, coatColour, saddle, horseShoe)); 
+                horses.add(new HorseGUI(name, symbol, finalConfidence, lane, breed, coatColour, saddle, horseShoe, 0, 0)); 
             }
 
             frame.dispose();
@@ -158,11 +160,7 @@ public class HorseRaceClassGUI {
      * @param laneSpinner        Spinner that defines the number of lanes
      */
     @SuppressWarnings("unused")
-    private void updateHorseInputs(JPanel horsesPanel, List<JTextField> nameFields,
-                                    List<JComboBox<String>> symbolBoxes, List<JComboBox<Integer>> laneBoxes,
-                                    List<JComboBox<String>> breedBoxes, List<JComboBox<String>> coatBoxes,
-                                    List<JComboBox<String>> saddleBoxes, List<JComboBox<String>> horseShoeBoxes,
-                                    JSpinner horseSpinner, JSpinner laneSpinner) {
+    private void updateHorseInputs(JPanel horsesPanel, List<JTextField> nameFields, List<JComboBox<String>> symbolBoxes, List<JComboBox<Integer>> laneBoxes, List<JComboBox<String>> breedBoxes, List<JComboBox<String>> coatBoxes, List<JComboBox<String>> saddleBoxes, List<JComboBox<String>> horseShoeBoxes, JSpinner horseSpinner, JSpinner laneSpinner) {
         horsesPanel.removeAll();
         nameFields.clear();
         symbolBoxes.clear();
@@ -173,23 +171,13 @@ public class HorseRaceClassGUI {
         int horseCount = (Integer) horseSpinner.getValue();
         int laneCount = (Integer) laneSpinner.getValue();
 
-        final String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘",
-                                        "🐓", "🐶", "🐕", "🐩", "🐱", "🐈",
-                                        "♔", "♕", "♖", "♗", "♘", "♙", 
-                                        "♚", "♛", "♜", "♝", "♞", "♟"};
-
-        final String[] prefixes = {"Thunder", "Midnight", "Shadow", "Lightning", "Silver",
-                "Golden", "Diamond", "Black", "White", "Red",
-                "Wild", "Crazy", "Majestic", "Royal", "Brave",
-                "Flying", "Dancing", "Galloping", "Mystic", "Spirit"};
-        final String[] suffixes = {"hoof", "mane", "tail", "storm", "fire",
-                "wind", "blaze", "dancer", "chaser", "runner",
-                "prince", "king", "queen", "star", "moon",
-                "sun", "dream", "whisper", "shadow", "flash"};
-
+        final String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘", "🐓", "🐶", "🐕", "🐩", "🐱", "🐈"};
+        final String[] prefixes = {"Thunder", "Midnight", "Shadow", "Lightning", "Silver","Golden", "Diamond", "Black", "White", "Red",
+                                    "Wild", "Crazy", "Majestic", "Royal", "Brave", "Flying", "Dancing", "Galloping", "Mystic", "Spirit"};
+        final String[] suffixes = {"hoof", "mane", "tail", "storm", "fire", "wind", "blaze", "dancer", "chaser", "runner",
+                                    "prince", "king", "queen", "star", "moon", "sun", "dream", "whisper", "shadow", "flash"};
         final String[] coats = {"Black", "Chestnut", "Bay", "Palomino", "Grey"};
         final String[] breeds = {"Arabian","Thoroughbred","Mustang","Clydesdale","Appaloosa"};
-
         final String[] saddles = {"Racing Saddle", "Comfort Saddle", "Old Saddle"};
         final String[] horseShoes = {"Steel Shoes", "Rubber Shoes", "Worn Shoes"};
 
@@ -321,6 +309,7 @@ public class HorseRaceClassGUI {
 
         JButton restartButton = new JButton("Restart");
         JButton replayButton = new JButton("Replay");
+        JButton raceStatsButton = new JButton("Statistics");
 
         restartButton.addActionListener(e -> {
             frame.dispose();
@@ -332,9 +321,12 @@ public class HorseRaceClassGUI {
             replayRaceWithSameHorses();
         });
 
+        raceStatsButton.addActionListener(e -> showRaceStatistics());
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(restartButton);
         buttonPanel.add(replayButton);
+        buttonPanel.add(raceStatsButton);
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
         // Resize window based on track length and lanes
@@ -356,6 +348,88 @@ public class HorseRaceClassGUI {
     }
 
     /**
+     * Displays a window with statistics for all horses in the race using a table
+     * Displays a window with statistics for all horses in the race using a JTable.
+     * The window size is fixed based on the content.
+     */
+    @SuppressWarnings("unused")
+    private void showRaceStatistics() {
+        JDialog statsDialog = new JDialog(frame, "Race Statistics", true);
+        statsDialog.setLayout(new BorderLayout());
+        
+        // Column names
+        String[] columnNames = {
+            "Name", "Symbol", "Breed", "Coat", "Saddle", 
+            "Shoes", "Confidence", "Wins", "Races"
+        };
+
+        // Create data for the table
+        Object[][] data = new Object[horses.size()][columnNames.length];
+        for (int i = 0; i < horses.size(); i++) {
+            HorseGUI horse = horses.get(i);
+            data[i][0] = horse.getName();
+            data[i][1] = horse.getSymbol();
+            data[i][2] = horse.getBreed();
+            data[i][3] = horse.getCoatColour();
+            data[i][4] = horse.getSaddle();
+            data[i][5] = horse.getShoes();
+            data[i][6] = String.format("%.0f%%", horse.getConfidence() * 100);
+            data[i][7] = horse.getWins();
+            data[i][8] = horse.getRaces();
+        }
+
+        // Create the table with a custom model to prevent editing
+        JTable table = new JTable(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table non-editable
+            }
+        };
+        
+        // Configure table appearance
+        table.setAutoCreateRowSorter(true);
+        table.setFillsViewportHeight(true);
+        table.setRowHeight(25); // Set fixed row height
+        
+        // Center-align numeric columns
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 6; i <= 8; i++) { // Columns 6-8 (Confidence, Wins, Races)
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        // Calculate optimal column widths
+        int[] colWidths = {120, 50, 100, 80, 100, 100, 80, 50, 50};
+        for (int i = 0; i < colWidths.length; i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
+        }
+
+        // Add table to scroll pane
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(Arrays.stream(colWidths).sum() + 30,Math.min(600, 50 + (horses.size() * table.getRowHeight()))));
+
+        // Add components to dialog
+        statsDialog.add(scrollPane, BorderLayout.CENTER);
+        
+        // Close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> statsDialog.dispose());
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(closeButton);
+        statsDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Calculate and set dialog size
+        int width = scrollPane.getPreferredSize().width + 20;
+        int height = scrollPane.getPreferredSize().height + buttonPanel.getPreferredSize().height + 20;
+        statsDialog.setSize(width, height);
+        
+        // Prevent resizing and center the dialog
+        statsDialog.setResizable(false);
+        statsDialog.setLocationRelativeTo(frame);
+        statsDialog.setVisible(true);
+    }
+
+    /**
      * Replays the race using the same horse configurations (name, symbol, confidence, lane, breed, coat, saddle, shoe)
      */
     private void replayRaceWithSameHorses() {
@@ -365,8 +439,7 @@ public class HorseRaceClassGUI {
 
         for (HorseGUI oldHorse : previousHorses) {
             double finalConfidence = calculateFinalConfidence(oldHorse.getBreed(), oldHorse.getCoatColour(), oldHorse.getSaddle(), oldHorse.getShoes(), weatherType);
-            horses.add(new HorseGUI(oldHorse.getName(),oldHorse.getSymbol(),finalConfidence,oldHorse.getLane(),oldHorse.getBreed(),oldHorse.getCoatColour(),oldHorse.getSaddle(),oldHorse.getShoes()
-            ));
+            horses.add(new HorseGUI(oldHorse.getName(),oldHorse.getSymbol(),finalConfidence,oldHorse.getLane(),oldHorse.getBreed(),oldHorse.getCoatColour(),oldHorse.getSaddle(),oldHorse.getShoes(), oldHorse.getWins(), oldHorse.getRaces()));
         }
 
         raceFinished = false;
@@ -381,25 +454,20 @@ public class HorseRaceClassGUI {
     private void startRace() {
         raceTimer = new Timer(100, e -> {
             if (raceFinished) return;
-
             for (HorseGUI horse : horses) {
                 if (!horse.hasFallen()) {
                     if (Math.random() < horse.getConfidence()) horse.moveForward();
-
                     if (trackType.equals("OVAL")) {
                         int lapLength = trackLength * 2;
                         if (horse.getDistance() > 0 && horse.getDistance() % lapLength == 0)
                             horse.completeLap();
                     }
-
                     if (Math.random() < 0.1 * horse.getConfidence() * horse.getConfidence()) horse.fall();
                 }
             }
-
             updateDisplay();
             checkRaceCompletion();
         });
-
         raceTimer.start();
     }
 
@@ -419,27 +487,21 @@ public class HorseRaceClassGUI {
         };
 
         String weatherDeatils = "|Current Weather: "+weatherSymbol+" "+weatherType+" |";
-
         sb.append("┌").append("─".repeat(weatherDeatils.length()+2)).append("┐\n");
         sb.append(weatherDeatils).append("\n");
         sb.append("└").append("─".repeat(weatherDeatils.length()+2)).append("┘\n");
 
         if (trackType.equals("STRAIGHT")) {
             sb.append("=".repeat(trackLength + 2)).append("\n");
-
             for (int lane = 1; lane <= numberOfLanes; lane++) {
                 HorseGUI horse = getHorseInLane(lane);
                 sb.append("|");
-
                 if (horse != null) {
                     int pos = Math.min(horse.getDistance(), trackLength);
-                    sb.append(" ".repeat(pos))
-                      .append(horse.hasFallen() ? "\u274C" : horse.getSymbol())
-                      .append(" ".repeat(trackLength - pos));
+                    sb.append(" ".repeat(pos)).append(horse.hasFallen() ? "\u274C" : horse.getSymbol()).append(" ".repeat(trackLength - pos));
                 } else {
                     sb.append(" ".repeat(trackLength));
                 }
-
                 sb.append("| ");
                 if (horse != null) {
                     sb.append("Lane ").append(horse.getLane()).append(": ").append(horse.getName()).append(" (Confidence: ").append((int)(horse.getConfidence() * 100)).append("%)");
@@ -448,28 +510,21 @@ public class HorseRaceClassGUI {
                 }
                 sb.append("\n");
             }
-
             sb.append("=".repeat(trackLength + 2)).append("\n");
         } else {
             // Oval track display
             sb.append(" ").append("=".repeat(trackLength + 1)).append("\n");
-
             for (int lane = 1; lane <= numberOfLanes; lane++) {
                 HorseGUI horse = getHorseInLane(lane);
                 sb.append("(");
-
                 if (horse != null) {
                     int lapProgress = horse.getDistance() % (trackLength * 2);
                     boolean goingRight = lapProgress < trackLength;
                     int displayPos = goingRight ? lapProgress : (trackLength * 2 - lapProgress);
-
-                    sb.append(" ".repeat(displayPos))
-                      .append(horse.hasFallen() ? "\u274C" : horse.getSymbol())
-                      .append(" ".repeat(trackLength - displayPos));
+                    sb.append(" ".repeat(displayPos)).append(horse.hasFallen() ? "\u274C" : horse.getSymbol()).append(" ".repeat(trackLength - displayPos));
                 } else {
                     sb.append(" ".repeat(trackLength + 1));
                 }
-
                 sb.append(") ");
                 if (horse != null) {
                     sb.append("Lane ").append(horse.getLane()).append(": ").append(horse.getName()).append(" (Confidence: ").append((int)(horse.getConfidence() * 100)).append("%)");
@@ -478,10 +533,8 @@ public class HorseRaceClassGUI {
                 }
                 sb.append("\n");
             }
-
             sb.append(" ").append("=".repeat(trackLength + 1)).append("\n");
         }
-
         raceDisplay.setText(sb.toString());
     }
 
@@ -524,19 +577,15 @@ public class HorseRaceClassGUI {
     
     /**
      * Displays a message announcing the race winner or no winner if all horses fell.
+     * Called at the end of the race
      */
     private void announceWinner() {
-        HorseGUI winner = horses.stream()
-            .filter(h -> !h.hasFallen())
-            .filter(h -> trackType.equals("STRAIGHT")?
-                h.getDistance() >= trackLength :
-                h.getLapsCompleted() >= 1)
-            .findFirst()
-            .orElse(null);
+        HorseGUI winner = horses.stream().filter(h -> !h.hasFallen()).filter(h -> trackType.equals("STRAIGHT")? h.getDistance() >= trackLength : h.getLapsCompleted() >= 1).findFirst().orElse(null);
+        String message = (winner != null) ? "🏆 Winner: " + winner.getName() + "! 🏆" : "All horses fell! No winner.";
 
-        String message = (winner != null)
-            ? "🏆 Winner: " + winner.getName() + "! 🏆"
-            : "All horses fell! No winner.";
+        // update stats
+        if (winner != null) { winner.setWins(winner.getWins() + 1); }
+        for (HorseGUI h : horses) { h.setRaces(h.getRaces() + 1); }
 
         JOptionPane.showMessageDialog(frame, message);
     }
