@@ -9,7 +9,7 @@ import javax.swing.*;
  * GUI-based horse race simulator with straight and oval tracks.
  * 
  * @author Peter Bojthe
- * @version 1.0.3
+ * @version 1.0.4
  */
 public class HorseRaceClassGUI {
     private enum TrackType {STRAIGHT, OVAL}
@@ -70,12 +70,14 @@ public class HorseRaceClassGUI {
         List<JTextField> nameFields = new ArrayList<>();
         List<JComboBox<String>> symbolBoxes = new ArrayList<>();
         List<JComboBox<Integer>> laneBoxes = new ArrayList<>();
+        List<JComboBox<String>> breedBoxes = new ArrayList<>();
+        List<JComboBox<String>> coatBoxes = new ArrayList<>();
+        List<JComboBox<String>> saddleBoxes = new ArrayList<>();
+        List<JComboBox<String>> horseShoeBoxes = new ArrayList<>();
 
-        horseSpinner.addChangeListener(e -> updateHorseInputs(
-            horsesPanel, nameFields, symbolBoxes, laneBoxes, horseSpinner, laneSpinner));
-        laneSpinner.addChangeListener(e -> updateHorseInputs(
-            horsesPanel, nameFields, symbolBoxes, laneBoxes, horseSpinner, laneSpinner));
-        updateHorseInputs(horsesPanel, nameFields, symbolBoxes, laneBoxes, horseSpinner, laneSpinner);
+        horseSpinner.addChangeListener(e -> updateHorseInputs(horsesPanel, nameFields, symbolBoxes, laneBoxes, breedBoxes, coatBoxes, saddleBoxes, horseShoeBoxes, horseSpinner, laneSpinner));
+        laneSpinner.addChangeListener(e -> updateHorseInputs(horsesPanel, nameFields, symbolBoxes, laneBoxes, breedBoxes, coatBoxes, saddleBoxes, horseShoeBoxes, horseSpinner, laneSpinner));
+        updateHorseInputs(horsesPanel, nameFields, symbolBoxes, laneBoxes, breedBoxes, coatBoxes, saddleBoxes, horseShoeBoxes, horseSpinner, laneSpinner);
         
 
         JButton startButton = new JButton("Start Race");
@@ -100,9 +102,15 @@ public class HorseRaceClassGUI {
                     JOptionPane.showMessageDialog(frame, "Lane " + lane + " is assigned to multiple horses.");
                     return;
                 }
+                String breed = (String) breedBoxes.get(i).getSelectedItem();
+                String coatColour = (String) coatBoxes .get(i).getSelectedItem();
+
+                String saddle = ((String) saddleBoxes.get(i).getSelectedItem());
+                String horseShoe = ((String) horseShoeBoxes.get(i).getSelectedItem());
+                double finalConfidence = calculateFinalConfidence(breed, coatColour, saddle, horseShoe);
 
                 takenLanes.add(lane);
-                horses.add(new HorseGUI(name, symbol, 0.15, lane));  // Default confidence: 0.15
+                horses.add(new HorseGUI(name, symbol, finalConfidence, lane, breed, coatColour, saddle, horseShoe)); 
             }
 
             frame.dispose();
@@ -130,34 +138,49 @@ public class HorseRaceClassGUI {
     /**
      * Updates the horse input fields based on the number of horses and lanes.
      *
-     * @param horsesPanel   Panel to which horse input rows are added
-     * @param nameFields    List to collect name text fields
-     * @param symbolBoxes   List to collect emoji combo boxes
-     * @param laneBoxes     List to collect lane number combo boxes
-     * @param horseSpinner  Spinner that defines the number of horses
-     * @param laneSpinner   Spinner that defines the number of lanes
+     * @param horsesPanel        Panel to which horse input rows are added
+     * @param nameFields         List to collect name text fields
+     * @param symbolBoxes        List to collect emoji combo boxes
+     * @param laneBoxes          List to collect lane number combo boxes
+     * @param breedBoxes         List to collect breed of horse
+     * @param coatBoxes          List to collect horse coat/ fur
+     * @param saddleBoxes        List to collect horse saddle
+     * @param horseShoeBoxes     List to collect horse Shoe
+     * @param horseSpinner       Spinner that defines the number of horses
+     * @param laneSpinner        Spinner that defines the number of lanes
      */
     @SuppressWarnings("unused")
-    private void updateHorseInputs(JPanel horsesPanel, List<JTextField> nameFields, List<JComboBox<String>> symbolBoxes, List<JComboBox<Integer>> laneBoxes, JSpinner horseSpinner, JSpinner laneSpinner) {
+    private void updateHorseInputs(JPanel horsesPanel, List<JTextField> nameFields,
+                                    List<JComboBox<String>> symbolBoxes, List<JComboBox<Integer>> laneBoxes,
+                                    List<JComboBox<String>> breedBoxes, List<JComboBox<String>> coatBoxes,
+                                    List<JComboBox<String>> saddleBoxes, List<JComboBox<String>> horseShoeBoxes,
+                                    JSpinner horseSpinner, JSpinner laneSpinner) {
         horsesPanel.removeAll();
         nameFields.clear();
         symbolBoxes.clear();
         laneBoxes.clear();
+        breedBoxes.clear();
+        coatBoxes.clear();
 
         int horseCount = (Integer) horseSpinner.getValue();
         int laneCount = (Integer) laneSpinner.getValue();
-        String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘", "🐓"};
 
-        // Name generation components
-        String[] prefixes = {"Thunder", "Midnight", "Shadow", "Lightning", "Silver", 
-                            "Golden", "Diamond", "Black", "White", "Red",
-                            "Wild", "Crazy", "Majestic", "Royal", "Brave",
-                            "Flying", "Dancing", "Galloping", "Mystic", "Spirit"};
+        final String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘", "🐓"};
 
-        String[] suffixes = {"hoof", "mane", "tail", "storm", "fire",
-                            "wind", "blaze", "dancer", "chaser", "runner",
-                            "prince", "king", "queen", "star", "moon",
-                            "sun", "dream", "whisper", "shadow", "flash"};
+        final String[] prefixes = {"Thunder", "Midnight", "Shadow", "Lightning", "Silver",
+                "Golden", "Diamond", "Black", "White", "Red",
+                "Wild", "Crazy", "Majestic", "Royal", "Brave",
+                "Flying", "Dancing", "Galloping", "Mystic", "Spirit"};
+        final String[] suffixes = {"hoof", "mane", "tail", "storm", "fire",
+                "wind", "blaze", "dancer", "chaser", "runner",
+                "prince", "king", "queen", "star", "moon",
+                "sun", "dream", "whisper", "shadow", "flash"};
+
+        final String[] coats = {"Black", "Chestnut", "Bay", "Palomino", "Grey"};
+        final String[] breeds = {"Arabian","Thoroughbred","Mustang","Clydesdale","Appaloosa"};
+
+        final String[] saddles = {"Racing Saddle", "Comfort Saddle", "Old Saddle"};
+        final String[] horseShoes = {"Steel Shoes", "Rubber Shoes", "Worn Shoes"};
 
         for (int i = 0; i < horseCount; i++) {
             JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -165,27 +188,25 @@ public class HorseRaceClassGUI {
             JTextField nameField = new JTextField("Horse " + (i + 1), 10);
             JComboBox<String> emojiBox = new JComboBox<>(emojiOptions);
             JComboBox<Integer> laneBox = new JComboBox<>();
+            JComboBox<String> breedBox = new JComboBox<>(breeds);
+            JComboBox<String> coatBox = new JComboBox<>(coats);
+            JComboBox<String> saddleDropdown = new JComboBox<>(saddles);
+            JComboBox<String> horseshoeDropdown = new JComboBox<>(horseShoes);
             JButton randomButton = new JButton("Random");
 
-            // Populate lane options
             for (int l = 1; l <= laneCount; l++) {
                 laneBox.addItem(l);
             }
 
-            // Set up random button action
             randomButton.addActionListener(e -> {
-                // Generate random name
-                String randomName = prefixes[(int)(Math.random() * prefixes.length)] +" "+ suffixes[(int)(Math.random() * suffixes.length)];
+                String randomName = prefixes[(int)(Math.random() * prefixes.length)]+" "+suffixes[(int)(Math.random() * suffixes.length)];
                 nameField.setText(randomName);
-
-                // Select random emoji
                 emojiBox.setSelectedIndex((int)(Math.random() * emojiOptions.length));
-
-                // // Select random available lane
-                // if (laneBox.getItemCount() > 0) {
-                //     int randomLaneIndex = (int)(Math.random() * laneBox.getItemCount());
-                //     laneBox.setSelectedIndex(randomLaneIndex);
-                // }
+                laneBox.setSelectedIndex((int)(Math.random() * laneBox.getItemCount()));
+                breedBox.setSelectedIndex((int)(Math.random() * breeds.length));
+                coatBox.setSelectedIndex((int)(Math.random() * coats.length));
+                saddleDropdown.setSelectedIndex((int)(Math.random() * saddles.length));
+                horseshoeDropdown.setSelectedIndex((int)(Math.random() * horseShoes.length));
             });
 
             row.add(new JLabel("Name:"));
@@ -194,11 +215,23 @@ public class HorseRaceClassGUI {
             row.add(emojiBox);
             row.add(new JLabel("Lane:"));
             row.add(laneBox);
+            row.add(new JLabel("Breed:"));
+            row.add(breedBox);
+            row.add(new JLabel("Coat:"));
+            row.add(coatBox);
+            row.add(new JLabel("Saddle:"));
+            row.add(saddleDropdown);
+            row.add(new JLabel("Shoes:"));
+            row.add(horseshoeDropdown);
             row.add(randomButton);
 
             nameFields.add(nameField);
             symbolBoxes.add(emojiBox);
             laneBoxes.add(laneBox);
+            breedBoxes.add(breedBox);
+            coatBoxes.add(coatBox);
+            saddleBoxes.add(saddleDropdown);
+            horseShoeBoxes.add(horseshoeDropdown);
             horsesPanel.add(row);
         }
 
@@ -206,6 +239,46 @@ public class HorseRaceClassGUI {
         horsesPanel.repaint();
         frame.pack();
     }
+
+    /**
+     * Returns the horse confidence based of its attributes
+     * 
+     * @param breed      breed of the horse
+     * @param coatColour coat/ fur colour of the horse
+     * @param saddle     saddle on the horse
+     * @param horseshoe  the shoes on the horse
+     * @return           the confidence of the horse based of its attributes
+     */
+    public static double calculateFinalConfidence(String breed, String coatColour, String saddle, String horseshoe) {
+        double baseConfidence = 0.25;
+        double multiplier = 1.0;
+        multiplier *= switch (breed.toLowerCase()) {
+            case "arabian" -> 1.1;
+            case "thoroughbred" -> 1.0;
+            case "mustang" -> 0.95;
+            default -> 1.0;
+        };
+        multiplier *= switch (coatColour.toLowerCase()) {
+            case "white" -> 1.1;
+            case "black" -> 1.0;
+            case "chestnut" -> 0.9;
+            default -> 1.0;
+        };
+        multiplier *= switch (saddle.toLowerCase()) {
+            case "racing saddle" -> 1.1;
+            case "comfort saddle" -> 1.0;
+            case "old saddle" -> 0.9;
+            default -> 1.0;
+        };
+        multiplier *= switch (horseshoe.toLowerCase()) {
+            case "steel shoes" -> 1.05;
+            case "rubber shoes" -> 1.0;
+            case "worn shoes" -> 0.85;
+            default -> 1.0;
+        };
+        return baseConfidence * multiplier;
+    }
+    
 
     /**
      * Creates and displays the main race window for the GUI-based horse race simulator.
@@ -259,7 +332,7 @@ public class HorseRaceClassGUI {
     }
 
     /**
-     * Replays the race using the same horse configurations (name, symbol, confidence, lane)
+     * Replays the race using the same horse configurations (name, symbol, confidence, lane, breed, coat, saddle, shoe)
      */
     private void replayRaceWithSameHorses() {
         List<HorseGUI> previousHorses = new ArrayList<>(horses);
@@ -270,7 +343,11 @@ public class HorseRaceClassGUI {
                 oldHorse.getName(),
                 oldHorse.getSymbol(),
                 oldHorse.getConfidence(),
-                oldHorse.getLane()
+                oldHorse.getLane(),
+                oldHorse.getBreed(),
+                oldHorse.getCoatColour(),
+                oldHorse.getSaddle(),
+                oldHorse.getShoes()
             ));
         }
 
