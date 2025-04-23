@@ -12,13 +12,18 @@ import javax.swing.*;
  * @version 1.0.4
  */
 public class HorseRaceClassGUI {
-    private enum TrackType {STRAIGHT, OVAL}
+    private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
+    private final String[] weatherTypeChoice = {"SUNNY", "RAINING", "WET", "MUDDY", "SNOW"};
+    private final List<HorseGUI> horses = new ArrayList<>();
+
+    private String trackType = "STRAIGHT";
+    private String weatherType = "SUNNY";
+
     private int trackLength = 20;
-    private TrackType trackType = TrackType.STRAIGHT;
     private int numberOfLanes = 2;
     private int numberOfHorses = 2;
-    private final List<HorseGUI> horses = new ArrayList<>();
     private boolean raceFinished = false;
+
     private JFrame frame;
     private JTextArea raceDisplay;
     private Timer raceTimer;
@@ -48,18 +53,18 @@ public class HorseRaceClassGUI {
         JPanel settingsPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         settingsPanel.setBorder(BorderFactory.createTitledBorder("Track Settings"));
 
-        JComboBox<TrackType> trackTypeCombo = new JComboBox<>(TrackType.values());
-        JSpinner lengthSpinner = new JSpinner(new SpinnerNumberModel(50, 20, 100, 5));
-        JSpinner laneSpinner = new JSpinner(new SpinnerNumberModel(4, 2, 8, 1));
-        JSpinner horseSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 8, 1));
+        JComboBox<String> trackTypeCombo = new JComboBox<>(trackTypeChoice);
+        JSpinner lengthSpinner = new JSpinner(new SpinnerNumberModel(20, 20, 100, 5));
+        JSpinner laneSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 12, 1));
+        JSpinner horseSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 12, 1));
 
         settingsPanel.add(new JLabel("Track Type:"));
         settingsPanel.add(trackTypeCombo);
         settingsPanel.add(new JLabel("Track Length (20 - 100):"));
         settingsPanel.add(lengthSpinner);
-        settingsPanel.add(new JLabel("Number of Lanes (2 - 8):"));
+        settingsPanel.add(new JLabel("Number of Lanes (2 - 12):"));
         settingsPanel.add(laneSpinner);
-        settingsPanel.add(new JLabel("Number of Horses (2 - 8):"));
+        settingsPanel.add(new JLabel("Number of Horses (2 - 12):"));
         settingsPanel.add(horseSpinner);
 
         // Panel to hold horse input rows
@@ -82,7 +87,7 @@ public class HorseRaceClassGUI {
 
         JButton startButton = new JButton("Start Race");
         startButton.addActionListener(e -> {
-            trackType = (TrackType) trackTypeCombo.getSelectedItem();
+            trackType = (String) trackTypeCombo.getSelectedItem();
             trackLength = (Integer) lengthSpinner.getValue();
             numberOfLanes = (Integer) laneSpinner.getValue();
             numberOfHorses = (Integer) horseSpinner.getValue();
@@ -107,7 +112,8 @@ public class HorseRaceClassGUI {
 
                 String saddle = ((String) saddleBoxes.get(i).getSelectedItem());
                 String horseShoe = ((String) horseShoeBoxes.get(i).getSelectedItem());
-                double finalConfidence = calculateFinalConfidence(breed, coatColour, saddle, horseShoe);
+                weatherType = weatherTypeChoice[(int)(Math.random() * weatherTypeChoice.length)];
+                double finalConfidence = calculateFinalConfidence(breed, coatColour, saddle, horseShoe, weatherType);
 
                 takenLanes.add(lane);
                 horses.add(new HorseGUI(name, symbol, finalConfidence, lane, breed, coatColour, saddle, horseShoe)); 
@@ -134,6 +140,8 @@ public class HorseRaceClassGUI {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
+
 
     /**
      * Updates the horse input fields based on the number of horses and lanes.
@@ -165,7 +173,10 @@ public class HorseRaceClassGUI {
         int horseCount = (Integer) horseSpinner.getValue();
         int laneCount = (Integer) laneSpinner.getValue();
 
-        final String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘", "🐓"};
+        final String[] emojiOptions = {"🐎", "🏇", "🐴", "🦄", "🐐", "🐂", "🐘",
+                                        "🐓", "🐶", "🐕", "🐩", "🐱", "🐈",
+                                        "♔", "♕", "♖", "♗", "♘", "♙", 
+                                        "♚", "♛", "♜", "♝", "♞", "♟"};
 
         final String[] prefixes = {"Thunder", "Midnight", "Shadow", "Lightning", "Silver",
                 "Golden", "Diamond", "Black", "White", "Red",
@@ -249,19 +260,24 @@ public class HorseRaceClassGUI {
      * @param horseshoe  the shoes on the horse
      * @return           the confidence of the horse based of its attributes
      */
-    public static double calculateFinalConfidence(String breed, String coatColour, String saddle, String horseshoe) {
-        double baseConfidence = 0.25;
+    public static double calculateFinalConfidence(String breed, String coatColour, String saddle, String horseshoe, String weather) {
+        double baseConfidence = 0.15;
         double multiplier = 1.0;
+
         multiplier *= switch (breed.toLowerCase()) {
             case "arabian" -> 1.1;
             case "thoroughbred" -> 1.0;
             case "mustang" -> 0.95;
+            case "clydesdale" -> 0.95;
+            case "appaloosa" -> 0.95;
             default -> 1.0;
         };
         multiplier *= switch (coatColour.toLowerCase()) {
-            case "white" -> 1.1;
-            case "black" -> 1.0;
-            case "chestnut" -> 0.9;
+            case "Black" -> 1.05;
+            case "Chestnut" -> 1.0;
+            case "Bay" -> 0.95;
+            case "Palomino" -> 1.05;
+            case "Grey" -> 1.0;
             default -> 1.0;
         };
         multiplier *= switch (saddle.toLowerCase()) {
@@ -274,6 +290,14 @@ public class HorseRaceClassGUI {
             case "steel shoes" -> 1.05;
             case "rubber shoes" -> 1.0;
             case "worn shoes" -> 0.85;
+            default -> 1.0;
+        };
+        multiplier *= switch (weather.toLowerCase()) {
+            case "sunny" -> 1.05;
+            case "raining" -> 0.85;
+            case "wet" -> 0.75;
+            case "muddy" -> 0.65;
+            case "snow" -> 0.45;
             default -> 1.0;
         };
         return baseConfidence * multiplier;
@@ -322,7 +346,7 @@ public class HorseRaceClassGUI {
             int charHeight = fm.getHeight();     
 
             int width = charWidth * (maxLineLength + 4);
-            int height = charHeight * (numberOfLanes + 8);
+            int height = charHeight * (numberOfLanes + 16);
             frame.setSize(width, height);
 
             frame.setResizable(false);
@@ -336,18 +360,12 @@ public class HorseRaceClassGUI {
      */
     private void replayRaceWithSameHorses() {
         List<HorseGUI> previousHorses = new ArrayList<>(horses);
+        weatherType = weatherTypeChoice[(int)(Math.random() * weatherTypeChoice.length)];
         horses.clear();
 
         for (HorseGUI oldHorse : previousHorses) {
-            horses.add(new HorseGUI(
-                oldHorse.getName(),
-                oldHorse.getSymbol(),
-                oldHorse.getConfidence(),
-                oldHorse.getLane(),
-                oldHorse.getBreed(),
-                oldHorse.getCoatColour(),
-                oldHorse.getSaddle(),
-                oldHorse.getShoes()
+            double finalConfidence = calculateFinalConfidence(oldHorse.getBreed(), oldHorse.getCoatColour(), oldHorse.getSaddle(), oldHorse.getShoes(), weatherType);
+            horses.add(new HorseGUI(oldHorse.getName(),oldHorse.getSymbol(),finalConfidence,oldHorse.getLane(),oldHorse.getBreed(),oldHorse.getCoatColour(),oldHorse.getSaddle(),oldHorse.getShoes()
             ));
         }
 
@@ -368,7 +386,7 @@ public class HorseRaceClassGUI {
                 if (!horse.hasFallen()) {
                     if (Math.random() < horse.getConfidence()) horse.moveForward();
 
-                    if (trackType == TrackType.OVAL) {
+                    if (trackType.equals("OVAL")) {
                         int lapLength = trackLength * 2;
                         if (horse.getDistance() > 0 && horse.getDistance() % lapLength == 0)
                             horse.completeLap();
@@ -391,7 +409,22 @@ public class HorseRaceClassGUI {
     private void updateDisplay() {
         StringBuilder sb = new StringBuilder();
 
-        if (trackType == TrackType.STRAIGHT) {
+        String weatherSymbol = switch(weatherType.toUpperCase()) {
+            case "SUNNY" -> "☀️";
+            case "RAINING" -> "🌧️";
+            case "WET" -> "💧";
+            case "MUDDY" -> "🌧️💧";
+            case "SNOW" -> "❄️";
+            default -> "🌤️";
+        };
+
+        String weatherDeatils = "|Current Weather: "+weatherSymbol+" "+weatherType+" |";
+
+        sb.append("┌").append("─".repeat(weatherDeatils.length()+2)).append("┐\n");
+        sb.append(weatherDeatils).append("\n");
+        sb.append("└").append("─".repeat(weatherDeatils.length()+2)).append("┘\n");
+
+        if (trackType.equals("STRAIGHT")) {
             sb.append("=".repeat(trackLength + 2)).append("\n");
 
             for (int lane = 1; lane <= numberOfLanes; lane++) {
@@ -472,10 +505,10 @@ public class HorseRaceClassGUI {
             if (!horse.hasFallen()) {
                 allFallen = false;
     
-                if (trackType == TrackType.STRAIGHT && horse.getDistance() >= trackLength) {
+                if (trackType.equals("STRAIGHT")&& horse.getDistance() >= trackLength) {
                     someoneFinished = true;
                     break;
-                } else if (trackType == TrackType.OVAL && horse.getLapsCompleted() >= 1) {
+                } else if (trackType.equals("OVAL") && horse.getLapsCompleted() >= 1) {
                     someoneFinished = true;
                     break;
                 }
@@ -495,7 +528,7 @@ public class HorseRaceClassGUI {
     private void announceWinner() {
         HorseGUI winner = horses.stream()
             .filter(h -> !h.hasFallen())
-            .filter(h -> trackType == TrackType.STRAIGHT ?
+            .filter(h -> trackType.equals("STRAIGHT")?
                 h.getDistance() >= trackLength :
                 h.getLapsCompleted() >= 1)
             .findFirst()
