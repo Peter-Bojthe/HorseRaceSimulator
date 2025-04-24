@@ -91,6 +91,15 @@ public class HorseGUI {
     /** @return how far the horse has traveled */
     public int getDistance() { return distance; }
 
+    /** reset horse distance */
+    public void resetDistance() { this.distance = 0; }
+
+    /** reset number of laps */
+    public void resetLaps() { this.lapsCompleted = 0; }
+
+    /** reset if the horse has fell */
+    public void resetFall() { this.fallen = false; }
+
     /** @return true if the horse has fallen */
     public boolean hasFallen() { return fallen; }
 

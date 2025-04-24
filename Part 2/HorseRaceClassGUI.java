@@ -41,7 +41,7 @@ public class HorseRaceClassGUI {
     /**
      * Launches the configuration dialog to set up a new race.
      */
-    public void start() {
+    private void start() {
         showConfigurationDialog();
     }
 
@@ -186,10 +186,32 @@ public class HorseRaceClassGUI {
         }
     }
 
+    /**
+     * resets horse betting attributes
+     * @param horses all horses
+     */
     private void resetHorseBets(List<HorseGUI> horses) {
         for (HorseGUI h : horses) { h.setWinnings(0.0); h.setBetPlaced(false); }
     }
+
+    /**
+     * resets horse race attributes
+     * @param horses all horses
+     */
+    private void resetHorseAfterRace(List<HorseGUI> horses) {
+        for (HorseGUI h : horses) {
+            h.resetDistance();
+            h.resetFall();
+            h.resetLaps();
+        }
+    }
     
+    /**
+     * Show user how much each horse could earn
+     * if the horse wins with the bet on it
+     * @param horses all the horses
+     * @param bet betting amount
+     */
     private static void showWinningsWindow(List<HorseGUI> horses, double bet) {
         String[] columnNames = {"Horse Name", "Potential Winnings (£)"};
         Object[][] data = new Object[horses.size()][2];
@@ -216,6 +238,11 @@ public class HorseRaceClassGUI {
         JOptionPane.showMessageDialog(null,panel,"Potential Winnings for Each Horse",JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * prompt user to select a horse to bet on
+     * @param horses all horses they can choose from
+     * @return the horse which was chosen
+     */
     private static HorseGUI promptHorseSelection(List<HorseGUI> horses) {
         String[] horseNames = new String[horses.size()];
         for (int i = 0; i < horses.size(); i++) {
@@ -331,7 +358,7 @@ public class HorseRaceClassGUI {
      * @param horseshoe  the shoes on the horse
      * @return           the confidence of the horse based of its attributes
      */
-    public static double calculateFinalConfidence(String breed, String coatColour, String saddle, String horseshoe, String weather) {
+    private static double calculateFinalConfidence(String breed, String coatColour, String saddle, String horseshoe, String weather) {
         double baseConfidence = 0.15;
         double multiplier = 1.0;
 
@@ -396,12 +423,14 @@ public class HorseRaceClassGUI {
 
         restartButton.addActionListener(e -> {
             frame.dispose();
+            resetHorseAfterRace(horses);
             resetHorseBets(horses);
             new HorseRaceClassGUI().start();
         });
 
         replayButton.addActionListener(e -> {
             frame.dispose();
+            resetHorseAfterRace(horses);
             replayRaceWithSameHorses();
         });
 
@@ -701,6 +730,9 @@ public class HorseRaceClassGUI {
         showLeaderboard();
     }
 
+    /**
+     * Show a leader board to the user when race is over
+     */
     private void showLeaderboard() {
         List<HorseGUI> standingHorses = horses.stream().filter(h -> !h.hasFallen()).sorted((h1, h2) -> {
                 double d1 = trackType.equals("STRAIGHT") ? h1.getDistance() : h1.getLapsCompleted() * 1000 + h1.getDistance();
