@@ -2,7 +2,7 @@
  * Represents a horse participating in the race.
  * 
  * @author Peter Bojthe
- * @version 1.0.3
+ * @version 1.0.4
  */
 public class HorseGUI {
     private final String symbol;           // Symbol representing the horse in the race display
@@ -17,6 +17,10 @@ public class HorseGUI {
     private double winRate;                // the win-rate of the horse
     private int wins;                      // total number of wins
     private int races;                     // total number of races
+
+    // Betting Attributes
+    private boolean betPlaced;
+    private double winnings;
 
     // Attributes affecting confidence
     private String breed;                  // Breed of the horse
@@ -45,11 +49,19 @@ public class HorseGUI {
         this.wins = wins;
         this.races = races;
 
+        this.betPlaced = false;
+        this.winnings = 0.0;
         this.distance = 0;
         this.fallen = false;
         this.lapsCompleted = 0;
     }
 
+    /**
+     * calculates the win rate
+     * @param wins total wins by the horse
+     * @param races total races by the horse
+     * @return the win rate of the horse
+     */
     public static double calculateWinRate(int wins, int races) {
         if (races == 0) { return 0.0; }
         return Math.round(wins*100.0) / (100.0*races);
@@ -88,25 +100,25 @@ public class HorseGUI {
     /** @return breed of the horse */
     public String getBreed() { return breed; }
 
-    /** Sets the breed of the horse */
+    /** Sets the breed of the horse @param breed of the horse */
     public void setBreed(String breed) { this.breed = breed; }
 
     /** @return the coat colour of the horse */
     public String getCoatColour() { return coatColour; }
 
-    /** sets the coat colour of the horse */
+    /** sets the coat colour of the horse @param coatColour colour of the horse */
     public void setCoatColour(String coatColour) { this.coatColour = coatColour; }
 
     /** @return the type of saddle on the horse */
     public String getSaddle() { return saddle; }
 
-    /** sets the type of saddle on the horse */
+    /** sets the type of saddle on the horse @param saddle saddle on the horse */
     public void setSaddle(String saddle) { this.saddle = saddle; }
 
     /** @return the type of shoes on the horse */
     public String getShoes() { return shoes; }
 
-    /** sets the type of shoes on the horse */
+    /** sets the type of shoes on the horse @param shoes shoes accessory */
     public void setShoes(String shoes) { this.shoes = shoes; }
 
     /** @return the win rate of the horse */
@@ -118,12 +130,24 @@ public class HorseGUI {
     /** @return the number of wins the horse has */
     public int getWins() { return wins; }
 
-    /** sets the number of wins the horse has */
+    /** sets the number of wins the horse has @param wins total wins the horse has */
     public void setWins(int wins) { this.wins = wins; }
 
     /** @return the number of races the horse has had */
     public int getRaces() { return races; }
 
-    /** sets the number of races the horse has had */
+    /** sets the number of races the horse has had @param races total races the horse has */
     public void setRaces(int races) { this.races = races; }
+
+    /** @return true if this horse has had a bet placed on it */
+    public boolean isBetPlaced() { return betPlaced; }
+
+    /** set to true if this horse has been bet on @param betPlaced flag which checks which horse has been bet on */
+    public void setBetPlaced(boolean betPlaced) { this.betPlaced = betPlaced; }
+
+    /** @return winnings the horse has earned for winning when it has been bet on */
+    public double getWinnings() { return winnings; }
+
+    /** sets the winnings of the horse @param winnings amount the horse can win */
+    public void setWinnings(double winnings) { this.winnings = winnings; }
 }

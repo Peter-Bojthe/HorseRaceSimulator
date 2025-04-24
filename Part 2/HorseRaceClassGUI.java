@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * GUI-based horse race simulator with straight and oval tracks.
@@ -122,6 +124,7 @@ public class HorseRaceClassGUI {
             }
 
             frame.dispose();
+            createBettingWindow(horses);
             createRaceWindow();
             startRace();
         });
@@ -144,6 +147,84 @@ public class HorseRaceClassGUI {
     }
 
 
+    /**
+     * ask the user if they want to bet
+     */
+    private void createBettingWindow(List<HorseGUI> horses) {
+        int option = JOptionPane.showConfirmDialog(null,"Would you like to place a bet?\nYour current balance: £" + String.format("%.2f", BettingSystemGUI.balance),"Betting",JOptionPane.YES_NO_OPTION);
+        if (option != JOptionPane.YES_OPTION) { return; }
+    
+        if (BettingSystemGUI.balance <= 0.0) {
+            JOptionPane.showMessageDialog(null,"You do not have enough money to place a bet.\nYour current balance: £0.00","Insufficient Funds",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        while (true) {
+            String input = JOptionPane.showInputDialog(null,"Enter your bet amount (0.0 to " + BettingSystemGUI.balance + ")\nYour current balance: £" + String.format("%.2f", BettingSystemGUI.balance),"Place Your Bet",JOptionPane.PLAIN_MESSAGE);
+            if (input == null) { return; }
+    
+            try {
+                double bet = Double.parseDouble(input);
+                if (bet < 0.0 || bet > BettingSystemGUI.balance) {
+                    JOptionPane.showMessageDialog(null,"Please enter a value between 0.0 and " + BettingSystemGUI.balance + ".","Invalid Input",JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
+    
+                BettingSystemGUI.removePayment(bet);
+                JOptionPane.showMessageDialog(null,"Bet placed: £" + String.format("%.2f", bet) + "\nNew balance: £" + String.format("%.2f", BettingSystemGUI.balance),"Bet Confirmed",JOptionPane.INFORMATION_MESSAGE);
+                showWinningsWindow(horses, bet);
+                HorseGUI selectedHorse = promptHorseSelection(horses);
+                if (selectedHorse == null) { return; }
+                selectedHorse.setBetPlaced(true);
+                return;
+    
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null,"Please enter a valid number.","Invalid Input",JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void resetHorseBets(List<HorseGUI> horses) {
+        for (HorseGUI h : horses) { h.setWinnings(0.0); h.setBetPlaced(false); }
+    }
+    
+    private static void showWinningsWindow(List<HorseGUI> horses, double bet) {
+        String[] columnNames = {"Horse Name", "Potential Winnings (£)"};
+        Object[][] data = new Object[horses.size()][2];
+    
+        for (int i = 0; i < horses.size(); i++) {
+            HorseGUI horse = horses.get(i);
+            double winnings = BettingSystemGUI.calculateWinnings(horse, bet);
+            horse.setWinnings(winnings);
+            data[i][0] = horse.getName();
+            data[i][1] = String.format("%.2f", winnings);
+        }
+    
+        JTable table = new JTable(new DefaultTableModel(data, columnNames));
+        JScrollPane scrollPane = new JScrollPane(table);
+    
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JLabel balanceLabel = new JLabel("Your current balance: £" + String.format("%.2f", BettingSystemGUI.balance));
+        balanceLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+        panel.add(balanceLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(scrollPane);
+    
+        JOptionPane.showMessageDialog(null,panel,"Potential Winnings for Each Horse",JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static HorseGUI promptHorseSelection(List<HorseGUI> horses) {
+        String[] horseNames = new String[horses.size()];
+        for (int i = 0; i < horses.size(); i++) {
+            horseNames[i] = horses.get(i).getName();
+        }
+        String selected = (String) JOptionPane.showInputDialog(null,"Which horse would you like to bet on?","Select Horse",JOptionPane.PLAIN_MESSAGE,null,horseNames,horseNames[0]);
+        if (selected == null) return null;
+        for (HorseGUI horse : horses) { if (horse.getName().equals(selected)) { return horse; } }
+
+        return null;
+    }
 
     /**
      * Updates the horse input fields based on the number of horses and lanes.
@@ -313,6 +394,7 @@ public class HorseRaceClassGUI {
 
         restartButton.addActionListener(e -> {
             frame.dispose();
+            resetHorseBets(horses);
             new HorseRaceClassGUI().start();
         });
 
@@ -360,7 +442,7 @@ public class HorseRaceClassGUI {
         // Column names
         String[] columnNames = {
             "Name", "Symbol", "Breed", "Coat", "Saddle", 
-            "Shoes", "Confidence", "Wins", "Races"
+            "Shoes", "Confidence", "Wins", "Races", "Win Rate"
         };
 
         // Create data for the table
@@ -376,6 +458,7 @@ public class HorseRaceClassGUI {
             data[i][6] = String.format("%.0f%%", horse.getConfidence() * 100);
             data[i][7] = horse.getWins();
             data[i][8] = horse.getRaces();
+            data[i][9] = String.format("%.0f%%", horse.getWinRate() * 100);
         }
 
         // Create the table with a custom model to prevent editing
@@ -389,17 +472,17 @@ public class HorseRaceClassGUI {
         // Configure table appearance
         table.setAutoCreateRowSorter(true);
         table.setFillsViewportHeight(true);
-        table.setRowHeight(25); // Set fixed row height
+        table.setRowHeight(30); // Set fixed row height
         
         // Center-align numeric columns
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 6; i <= 8; i++) { // Columns 6-8 (Confidence, Wins, Races)
+        for (int i = 6; i <= 9; i++) { // Columns 6-8 (Confidence, Wins, Races, Win Rate)
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
         // Calculate optimal column widths
-        int[] colWidths = {120, 50, 100, 80, 100, 100, 80, 50, 50};
+        int[] colWidths = {120, 50, 100, 80, 100, 100, 80, 50, 50, 50};
         for (int i = 0; i < colWidths.length; i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
         }
@@ -441,6 +524,9 @@ public class HorseRaceClassGUI {
             double finalConfidence = calculateFinalConfidence(oldHorse.getBreed(), oldHorse.getCoatColour(), oldHorse.getSaddle(), oldHorse.getShoes(), weatherType);
             horses.add(new HorseGUI(oldHorse.getName(),oldHorse.getSymbol(),finalConfidence,oldHorse.getLane(),oldHorse.getBreed(),oldHorse.getCoatColour(),oldHorse.getSaddle(),oldHorse.getShoes(), oldHorse.getWins(), oldHorse.getRaces()));
         }
+
+        resetHorseBets(horses);
+        createBettingWindow(horses);
 
         raceFinished = false;
         createRaceWindow();
@@ -577,16 +663,69 @@ public class HorseRaceClassGUI {
     
     /**
      * Displays a message announcing the race winner or no winner if all horses fell.
-     * Called at the end of the race
      */
     private void announceWinner() {
-        HorseGUI winner = horses.stream().filter(h -> !h.hasFallen()).filter(h -> trackType.equals("STRAIGHT")? h.getDistance() >= trackLength : h.getLapsCompleted() >= 1).findFirst().orElse(null);
+        HorseGUI winner = horses.stream().filter(h -> !h.hasFallen()).filter(h -> trackType.equals("STRAIGHT") ? h.getDistance() >= trackLength : h.getLapsCompleted() >= 1).findFirst().orElse(null);
         String message = (winner != null) ? "🏆 Winner: " + winner.getName() + "! 🏆" : "All horses fell! No winner.";
+        HorseGUI betHorse = horses.stream().filter(HorseGUI::isBetPlaced).findFirst().orElse(null);
 
-        // update stats
-        if (winner != null) { winner.setWins(winner.getWins() + 1); }
-        for (HorseGUI h : horses) { h.setRaces(h.getRaces() + 1); }
+        // If user placed a bet
+        if (betHorse != null) {
+            if (betHorse == winner) {
+                double winnings = betHorse.getWinnings();
+                BettingSystemGUI.addWinnings(winnings);
+                message += "\n\n🎉 You won the bet on " + betHorse.getName() + "!\n💰 Winnings: $" + String.format("%.2f", winnings);
+            } else {
+                message += "\n\n😞 You lost the bet on " + betHorse.getName() + ".";
+            }
+        }
+
+        message += "\n\n💼 Current Balance: $" + String.format("%.2f", BettingSystemGUI.balance);
+
+        // Update horse stats
+        if (winner != null) {
+            winner.setWins(winner.getWins() + 1);
+        }
+
+        for (HorseGUI h : horses) {
+            h.setRaces(h.getRaces() + 1);
+            h.setWinRate(h.getWins(), h.getRaces());
+        }
 
         JOptionPane.showMessageDialog(frame, message);
+        showLeaderboard();
+    }
+
+    private void showLeaderboard() {
+        List<HorseGUI> standingHorses = horses.stream()
+            .filter(h -> !h.hasFallen())
+            .sorted((h1, h2) -> {
+                double d1 = trackType.equals("STRAIGHT") ? h1.getDistance() : h1.getLapsCompleted() * 1000 + h1.getDistance(); // prioritize laps first
+                double d2 = trackType.equals("STRAIGHT") ? h2.getDistance() : h2.getLapsCompleted() * 1000 + h2.getDistance();
+                return Double.compare(d2, d1); // descending
+            })
+            .collect(Collectors.toList());
+
+        if (standingHorses.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "🏁 No horses standing to display a leaderboard.", "Leaderboard", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String[] columns = {"Rank", "Horse", "Distance"};
+        Object[][] data = new Object[standingHorses.size()][3];
+
+        for (int i = 0; i < standingHorses.size(); i++) {
+            HorseGUI h = standingHorses.get(i);
+            double distance = trackType.equals("STRAIGHT") ? h.getDistance() : h.getLapsCompleted() * 1000 + h.getDistance();
+            data[i][0] = (i + 1);
+            data[i][1] = h.getName();
+            data[i][2] = String.format("%.2f", distance) + " units";
+        }
+
+        JTable table = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        JOptionPane.showMessageDialog(frame,scrollPane,"🏁 Race Leaderboard (Standing Horses)",JOptionPane.INFORMATION_MESSAGE);
+        resetHorseBets(horses);
     }
 }
