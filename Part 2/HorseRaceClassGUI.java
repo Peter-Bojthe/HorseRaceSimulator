@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableModel;
  * GUI-based horse race simulator with straight and oval tracks.
  * 
  * @author Peter Bojthe
- * @version 1.0.4
+ * @version 1.0.6
  */
 public class HorseRaceClassGUI {
     private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
@@ -31,6 +31,8 @@ public class HorseRaceClassGUI {
     private JFrame frame;
     private JTextArea raceDisplay;
     private Timer raceTimer;
+
+    private final RaceTimerGUI raceTimerUtil = new RaceTimerGUI();
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new HorseRaceClassGUI().start());
@@ -431,7 +433,6 @@ public class HorseRaceClassGUI {
 
     /**
      * Displays a window with statistics for all horses in the race using a table
-     * Displays a window with statistics for all horses in the race using a JTable.
      * The window size is fixed based on the content.
      */
     @SuppressWarnings("unused")
@@ -477,7 +478,7 @@ public class HorseRaceClassGUI {
         // Center-align numeric columns
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 6; i <= 9; i++) { // Columns 6-8 (Confidence, Wins, Races, Win Rate)
+        for (int i = 6; i <= 9; i++) { // Columns 6-9 (Confidence, Wins, Races, Win Rate)
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
@@ -513,7 +514,7 @@ public class HorseRaceClassGUI {
     }
 
     /**
-     * Replays the race using the same horse configurations (name, symbol, confidence, lane, breed, coat, saddle, shoe)
+     * Replays the race using the same horse configurations (name, symbol, confidence, lane,... ) etc
      */
     private void replayRaceWithSameHorses() {
         List<HorseGUI> previousHorses = new ArrayList<>(horses);
@@ -538,6 +539,7 @@ public class HorseRaceClassGUI {
      */
     @SuppressWarnings("unused")
     private void startRace() {
+        raceTimerUtil.start();
         raceTimer = new Timer(100, e -> {
             if (raceFinished) return;
             for (HorseGUI horse : horses) {
@@ -578,7 +580,7 @@ public class HorseRaceClassGUI {
         sb.append("└").append("─".repeat(weatherDeatils.length()+2)).append("┘\n");
 
         if (trackType.equals("STRAIGHT")) {
-            sb.append("=".repeat(trackLength + 2)).append("\n");
+            sb.append("=".repeat(trackLength + 3)).append("\n");
             for (int lane = 1; lane <= numberOfLanes; lane++) {
                 HorseGUI horse = getHorseInLane(lane);
                 sb.append("|");
@@ -586,7 +588,7 @@ public class HorseRaceClassGUI {
                     int pos = Math.min(horse.getDistance(), trackLength);
                     sb.append(" ".repeat(pos)).append(horse.hasFallen() ? "\u274C" : horse.getSymbol()).append(" ".repeat(trackLength - pos));
                 } else {
-                    sb.append(" ".repeat(trackLength));
+                    sb.append(" ".repeat(trackLength+2));
                 }
                 sb.append("| ");
                 if (horse != null) {
@@ -596,10 +598,10 @@ public class HorseRaceClassGUI {
                 }
                 sb.append("\n");
             }
-            sb.append("=".repeat(trackLength + 2)).append("\n");
+            sb.append("=".repeat(trackLength + 3)).append("\n");
         } else {
             // Oval track display
-            sb.append(" ").append("=".repeat(trackLength + 1)).append("\n");
+            sb.append(" ").append("=".repeat(trackLength + 3)).append("\n");
             for (int lane = 1; lane <= numberOfLanes; lane++) {
                 HorseGUI horse = getHorseInLane(lane);
                 sb.append("(");
@@ -609,7 +611,7 @@ public class HorseRaceClassGUI {
                     int displayPos = goingRight ? lapProgress : (trackLength * 2 - lapProgress);
                     sb.append(" ".repeat(displayPos)).append(horse.hasFallen() ? "\u274C" : horse.getSymbol()).append(" ".repeat(trackLength - displayPos));
                 } else {
-                    sb.append(" ".repeat(trackLength + 1));
+                    sb.append(" ".repeat(trackLength + 2));
                 }
                 sb.append(") ");
                 if (horse != null) {
@@ -619,7 +621,7 @@ public class HorseRaceClassGUI {
                 }
                 sb.append("\n");
             }
-            sb.append(" ").append("=".repeat(trackLength + 1)).append("\n");
+            sb.append(" ").append("=".repeat(trackLength + 3)).append("\n");
         }
         raceDisplay.setText(sb.toString());
     }
@@ -665,22 +667,25 @@ public class HorseRaceClassGUI {
      * Displays a message announcing the race winner or no winner if all horses fell.
      */
     private void announceWinner() {
+        raceTimerUtil.stop();
+
         HorseGUI winner = horses.stream().filter(h -> !h.hasFallen()).filter(h -> trackType.equals("STRAIGHT") ? h.getDistance() >= trackLength : h.getLapsCompleted() >= 1).findFirst().orElse(null);
         String message = (winner != null) ? "🏆 Winner: " + winner.getName() + "! 🏆" : "All horses fell! No winner.";
         HorseGUI betHorse = horses.stream().filter(HorseGUI::isBetPlaced).findFirst().orElse(null);
+        message += "\n\n⏱ Race Time: " + raceTimerUtil.getFormattedTime();
 
         // If user placed a bet
         if (betHorse != null) {
             if (betHorse == winner) {
                 double winnings = betHorse.getWinnings();
                 BettingSystemGUI.addWinnings(winnings);
-                message += "\n\n🎉 You won the bet on " + betHorse.getName() + "!\n💰 Winnings: $" + String.format("%.2f", winnings);
+                message += "\n\n🎉 You won the bet on " + betHorse.getName() + "!\n💰 Winnings: £" + String.format("%.2f", winnings);
             } else {
                 message += "\n\n😞 You lost the bet on " + betHorse.getName() + ".";
             }
         }
 
-        message += "\n\n💼 Current Balance: $" + String.format("%.2f", BettingSystemGUI.balance);
+        message += "\n\n💼 Current Balance: £" + String.format("%.2f", BettingSystemGUI.balance);
 
         // Update horse stats
         if (winner != null) {
@@ -697,10 +702,8 @@ public class HorseRaceClassGUI {
     }
 
     private void showLeaderboard() {
-        List<HorseGUI> standingHorses = horses.stream()
-            .filter(h -> !h.hasFallen())
-            .sorted((h1, h2) -> {
-                double d1 = trackType.equals("STRAIGHT") ? h1.getDistance() : h1.getLapsCompleted() * 1000 + h1.getDistance(); // prioritize laps first
+        List<HorseGUI> standingHorses = horses.stream().filter(h -> !h.hasFallen()).sorted((h1, h2) -> {
+                double d1 = trackType.equals("STRAIGHT") ? h1.getDistance() : h1.getLapsCompleted() * 1000 + h1.getDistance();
                 double d2 = trackType.equals("STRAIGHT") ? h2.getDistance() : h2.getLapsCompleted() * 1000 + h2.getDistance();
                 return Double.compare(d2, d1); // descending
             })
@@ -719,7 +722,7 @@ public class HorseRaceClassGUI {
             double distance = trackType.equals("STRAIGHT") ? h.getDistance() : h.getLapsCompleted() * 1000 + h.getDistance();
             data[i][0] = (i + 1);
             data[i][1] = h.getName();
-            data[i][2] = String.format("%.2f", distance) + " units";
+            data[i][2] = String.format("%.2f", distance);
         }
 
         JTable table = new JTable(data, columns);
