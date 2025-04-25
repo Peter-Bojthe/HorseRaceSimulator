@@ -17,7 +17,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class HorseRaceClassGUI {
     private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
-    private final String[] weatherTypeChoice = {"SUNNY", "RAINING", "WET", "MUDDY", "SNOW"};
+    private final String[] weatherTypeChoice = {"SUNNY", "RAINING", "WET", "MUDDY", "SNOW", "ICY"};
     private final List<HorseGUI> horses = new ArrayList<>();
 
     private String trackType = "STRAIGHT";
@@ -396,6 +396,7 @@ public class HorseRaceClassGUI {
             case "wet" -> 0.75;
             case "muddy" -> 0.65;
             case "snow" -> 0.45;
+            case "icy" -> 0.35;
             default -> 1.0;
         };
         return baseConfidence * multiplier;
@@ -600,6 +601,7 @@ public class HorseRaceClassGUI {
             case "WET" -> "💧";
             case "MUDDY" -> "🌧️💧";
             case "SNOW" -> "❄️";
+            case "ICY" -> "🧊";
             default -> "🌤️";
         };
 
