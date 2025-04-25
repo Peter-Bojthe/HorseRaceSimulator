@@ -149,8 +149,8 @@ public class Race extends UserInput {
     private void raceConditions() {
         Random random = new Random();
 
-        String[] weatherConditions = {"Raining", "Wet", "Sunny", "Snow"};
-        double[] weatherConditionsEffect = {0.75, 0.85, 1, 0.50};
+        String[] weatherConditions = {"Raining", "Wet", "Sunny", "Snow", "Muddy"};
+        double[] weatherConditionsEffect = {0.75, 0.85, 1, 0.50, 0.50};
 
         int chosen = random.nextInt(weatherConditions.length);
         String newWeatherCondition = weatherConditions[chosen];
@@ -177,6 +177,7 @@ public class Race extends UserInput {
             case "Wet"     -> System.out.println("\nHorse confidence is decreased by 15%, due to a wet track.");
             case "Sunny"   -> System.out.println("\nHorse confidence is not affected, it is sunny.");
             case "Snow"    -> System.out.println("\nHorse confidence is decreased by 50% due to snow.");
+            case "Muddy"   -> System.out.println("\nHorse confidence is decreased by 50% due to mud.");
         }
         for (Horse horse : horses) {
             if (horse == null) continue;

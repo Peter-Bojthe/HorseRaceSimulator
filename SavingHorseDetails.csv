@@ -2,16 +2,18 @@ Name,Confidence,Character,Total Wins,Total Races,Win Rate
 Shadow moon,0.12,R,0,1,0.00
 Lightning dream,0.12,z,0,1,0.00
 Flying runner,0.02,Z,0,6,0.00
-Thunder hoof,0.10,E,1,3,0.33
-Majestic shadow,0.05,9,0,3,0.00
+Thunder hoof,0.17,l,0,1,0.00
+Majestic shadow,0.04,9,0,4,0.00
 Galloping hoof,0.21,8,1,1,1.00
 Royal wind,0.12,b,0,1,0.00
 Shadow tail,0.12,F,0,1,0.00
-Dancing fire,0.10,U,0,5,0.00
+Dancing fire,0.08,Y,0,2,0.00
 Silver tail,0.10,Q,0,5,0.00
 Galloping whisper,0.14,D,2,5,0.40
 Black king,0.12,6,1,5,0.20
-Red chaser,0.12,0,1,5,0.20
-Mystic queen,0.10,i,0,5,0.00
-Midnight whisper,0.10,c,0,5,0.00
+Red chaser,0.09,9,0,2,0.00
+Mystic queen,0.17,T,0,1,0.00
+Midnight whisper,0.19,7,0,1,0.00
 Golden king,0.12,H,1,5,0.20
+TEST 1 FILE,0.23,1,0,1,0.00
+TEST 2 FILE,0.28,2,1,1,1.00

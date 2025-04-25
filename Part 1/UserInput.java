@@ -77,6 +77,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
         while (!valid) {
             input = inputString(statement);
             valid = validateCharacter(input);
+            if (!valid) { System.out.println("Single character only.\nTry Again!"); }
         }
         return input.charAt(0);
     }
@@ -89,7 +90,7 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      */
     @Override
     public boolean validateCharacter(String input) {
-        return (input.length() != 0);
+        return (input.length() == 1);
     }
 
     /**
@@ -206,10 +207,10 @@ public class UserInput implements UserOptionInterface, UserInputInterface {
      */
     @Override
     public int chooseNumberOfLanes(String statement) {
-        System.out.println("\n\nNumber of lanes must be greater than 2 to start race simulation.");
+        System.out.println("\n\nNumber of lanes must be greater than 2 and less than or equal to 8 to start race simulation.");
         int input = inputNumber(statement);
         while (input < 2 || input > 8) {
-            System.out.println("Number of lanes must be greater than 2 to start race simulation.");
+            System.out.println("Number of lanes must be greater than 2 and less than or equal to 8 to start race simulation.");
             input = inputNumber(statement);
         }
         return input;
