@@ -9,7 +9,7 @@ A Java application that simulates horse races with both terminal and graphical i
 
 ---
 
-## 🎮 GUI Version  
+## 🎮 Graphical User Interface Version  
 ### Race Customisation/ Configuration Window  
 <img width="776" alt="GUI Main Screen" src="https://github.com/user-attachments/assets/3c4b7a90-e78e-4c11-a10d-9297af3b550c" />
 
@@ -19,20 +19,24 @@ A Java application that simulates horse races with both terminal and graphical i
 ### Race Simulation
 <img width="483" alt="Customization Screen" src="https://github.com/user-attachments/assets/197fc9ca-87bd-487a-838f-7eb65ec136e7" />
 
+### Statistics and Analytics Window
+<img width="799" alt="image" src="https://github.com/user-attachments/assets/5b120258-0bdd-4e7f-b7b1-14b5dd35841e" />
+
 ---
 
 ## 🚀 Quick Start  
 1. Clone: `git clone https://github.com/Peter-Bojthe/HorseRaceSimulator.git`  
-2. Navigate to either `PartI/` (terminal) or `PartII/` (GUI)  
+2. Navigate to either `PartI/` (terminal) or `PartII/` (Graphical User Interface)  
 3. Compile: `javac *.java`  
-4. Run: `java Main`  
+4. Run: `java HorseRaceSimulator` (Terminal)
+5. Run: `java HorseRaceSimulatorGUI` (Graphical User Interface)
 
 ## ⚙️ Requirements  
 - Java JDK 11+
 - Java Swing (GUI Version)  
 
 ## 💻 Usage  
-- **Terminal version and GUI version**:
+- **Terminal version and Graphical User Interface version**:
   - Set horse names and colors  
   - Place bets before each race  
   - Watch animated race simulation  
