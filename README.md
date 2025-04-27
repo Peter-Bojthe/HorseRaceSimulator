@@ -2,12 +2,16 @@
 
 A Java application that simulates horse races with both terminal and graphical interfaces.
 
+
 ---
+
 
 ## 🖥️ Terminal Version  
 <img width="388" alt="Terminal Simulation" src="https://github.com/user-attachments/assets/a248e9b9-992d-4bc7-be8c-bb8a3c02f6db" />
 
+
 ---
+
 
 ## 🎮 Graphical User Interface Version  
 ### Race Customisation/ Configuration Window  
@@ -20,7 +24,8 @@ A Java application that simulates horse races with both terminal and graphical i
 <img width="483" alt="Customization Screen" src="https://github.com/user-attachments/assets/197fc9ca-87bd-487a-838f-7eb65ec136e7" />
 
 ### Statistics and Analytics Window
-<img width="799" alt="image" src="https://github.com/user-attachments/assets/5b120258-0bdd-4e7f-b7b1-14b5dd35841e" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/e938481d-476e-403e-bfd0-9db5984ff3c3" />
+
 
 ---
 
@@ -37,9 +42,12 @@ A Java application that simulates horse races with both terminal and graphical i
 
 ## 💻 Usage  
 - **Terminal version and Graphical User Interface version**:
-  - Set horse names and colors  
+  - Configure track and horse details 
   - Place bets before each race  
   - Watch animated race simulation  
 
 ## 📜 License  
 MIT  
+
+
+---
