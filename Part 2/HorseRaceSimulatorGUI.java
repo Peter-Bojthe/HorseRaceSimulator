@@ -15,7 +15,7 @@ import javax.swing.table.DefaultTableModel;
  * @author Peter Bojthe
  * @version 1.0.7
  */
-public class HorseRaceClassGUI {
+public class HorseRaceSimulatorGUI {
     private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
     private final String[] weatherTypeChoice = {"SUNNY", "RAINING", "WET", "MUDDY", "SNOW", "ICY"};
     private final List<HorseGUI> horses = new ArrayList<>();
@@ -35,13 +35,14 @@ public class HorseRaceClassGUI {
     private final RaceTimerGUI raceTimerUtil = new RaceTimerGUI();
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new HorseRaceClassGUI().start());
+        HorseRaceSimulatorGUI race = new HorseRaceSimulatorGUI();
+        race.startRaceGUI();
     }
 
     /**
      * Launches the configuration dialog to set up a new race.
      */
-    private void start() {
+    private void startRaceGUI() {
         showConfigurationDialog();
     }
 
@@ -426,7 +427,7 @@ public class HorseRaceClassGUI {
             frame.dispose();
             resetHorseAfterRace(horses);
             resetHorseBets(horses);
-            new HorseRaceClassGUI().start();
+            new HorseRaceSimulatorGUI().startRaceGUI();
         });
 
         replayButton.addActionListener(e -> {
