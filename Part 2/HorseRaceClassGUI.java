@@ -122,7 +122,7 @@ public class HorseRaceClassGUI {
                 double finalConfidence = calculateFinalConfidence(breed, coatColour, saddle, horseShoe, weatherType);
 
                 takenLanes.add(lane);
-                horses.add(new HorseGUI(name, symbol, finalConfidence, lane, breed, coatColour, saddle, horseShoe, 0, 0)); 
+                horses.add(new HorseGUI(name, symbol, finalConfidence, lane, breed, coatColour, saddle, horseShoe, 0, 0, 0)); 
             }
 
             frame.dispose();
@@ -473,7 +473,7 @@ public class HorseRaceClassGUI {
         // Column names
         String[] columnNames = {
             "Name", "Symbol", "Breed", "Coat", "Saddle", 
-            "Shoes", "Confidence", "Wins", "Races", "Win Rate"
+            "Shoes", "Confidence (%)", "Wins", "Races", "Win Rate (%)", "Average Speed (unit/sec)"
         };
 
         // Create data for the table
@@ -490,6 +490,7 @@ public class HorseRaceClassGUI {
             data[i][7] = horse.getWins();
             data[i][8] = horse.getRaces();
             data[i][9] = String.format("%.0f%%", horse.getWinRate() * 100);
+            data[i][10] = String.format("%.2f", horse.getAverageSpeed());
         }
 
         // Create the table with a custom model to prevent editing
@@ -508,12 +509,12 @@ public class HorseRaceClassGUI {
         // Center-align numeric columns
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 6; i <= 9; i++) { // Columns 6-9 (Confidence, Wins, Races, Win Rate)
+        for (int i = 6; i <= 10; i++) { // Columns 6-10 (Confidence, Wins, Races, Win Rate, Average Speed)
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
         // Calculate optimal column widths
-        int[] colWidths = {120, 50, 100, 80, 100, 100, 80, 50, 50, 50};
+        int[] colWidths = {120, 50, 100, 80, 100, 100, 100, 50, 50, 85, 200};
         for (int i = 0; i < colWidths.length; i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
         }
@@ -553,7 +554,7 @@ public class HorseRaceClassGUI {
 
         for (HorseGUI oldHorse : previousHorses) {
             double finalConfidence = calculateFinalConfidence(oldHorse.getBreed(), oldHorse.getCoatColour(), oldHorse.getSaddle(), oldHorse.getShoes(), weatherType);
-            horses.add(new HorseGUI(oldHorse.getName(),oldHorse.getSymbol(),finalConfidence,oldHorse.getLane(),oldHorse.getBreed(),oldHorse.getCoatColour(),oldHorse.getSaddle(),oldHorse.getShoes(), oldHorse.getWins(), oldHorse.getRaces()));
+            horses.add(new HorseGUI(oldHorse.getName(),oldHorse.getSymbol(),finalConfidence,oldHorse.getLane(),oldHorse.getBreed(),oldHorse.getCoatColour(),oldHorse.getSaddle(),oldHorse.getShoes(), oldHorse.getWins(), oldHorse.getRaces(), oldHorse.getAverageSpeed()));
         }
 
         resetHorseBets(horses);
@@ -699,11 +700,16 @@ public class HorseRaceClassGUI {
      */
     private void announceWinner() {
         raceTimerUtil.stop();
+        double raceLengthTime = raceTimerUtil.getElapsedSeconds();
+
+        for (HorseGUI h : horses) {
+            h.setAverageSpeed(h.getDistance()/raceLengthTime);
+        }
 
         HorseGUI winner = horses.stream().filter(h -> !h.hasFallen()).filter(h -> trackType.equals("STRAIGHT") ? h.getDistance() >= trackLength : h.getLapsCompleted() >= 1).findFirst().orElse(null);
-        String message = (winner != null) ? "🏆 Winner: " + winner.getName() + "! 🏆" : "All horses fell! No winner.";
+        String message = (winner != null) ? "🏆 Winner: " + winner.getName() + "! 🏆\n⏱ Average Speed: " + String.format("%.2f", winner.getAverageSpeed()) +" units per second!" : "All horses fell! No winner.";
         HorseGUI betHorse = horses.stream().filter(HorseGUI::isBetPlaced).findFirst().orElse(null);
-        message += "\n\n⏱ Race Time: " + raceTimerUtil.getFormattedTime();
+        message += "\n\n⏱ Race Time: " + raceLengthTime;
 
         // If user placed a bet
         if (betHorse != null) {
@@ -740,23 +746,23 @@ public class HorseRaceClassGUI {
                 double d1 = trackType.equals("STRAIGHT") ? h1.getDistance() : h1.getLapsCompleted() * 1000 + h1.getDistance();
                 double d2 = trackType.equals("STRAIGHT") ? h2.getDistance() : h2.getLapsCompleted() * 1000 + h2.getDistance();
                 return Double.compare(d2, d1); // descending
-            })
-            .collect(Collectors.toList());
+            }).collect(Collectors.toList());
 
         if (standingHorses.isEmpty()) {
             JOptionPane.showMessageDialog(frame, "🏁 No horses standing to display a leaderboard.", "Leaderboard", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        String[] columns = {"Rank", "Horse", "Distance"};
-        Object[][] data = new Object[standingHorses.size()][3];
+        String[] columns = {"Rank", "Horse", "Distance", "Average Speed"};
+        Object[][] data = new Object[standingHorses.size()][4];
 
         for (int i = 0; i < standingHorses.size(); i++) {
             HorseGUI h = standingHorses.get(i);
-            double distance = trackType.equals("STRAIGHT") ? h.getDistance() : h.getLapsCompleted() * 1000 + h.getDistance();
+            double distance = trackType.equals("STRAIGHT") ? h.getDistance() : h.getLapsCompleted() * h.getDistance();
             data[i][0] = (i + 1);
             data[i][1] = h.getName();
             data[i][2] = String.format("%.2f", distance);
+            data[i][3] = String.format("%.2f", h.getAverageSpeed());
         }
 
         JTable table = new JTable(data, columns);

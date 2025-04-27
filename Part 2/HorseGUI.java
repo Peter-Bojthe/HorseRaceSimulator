@@ -17,6 +17,7 @@ public class HorseGUI {
     private double winRate;                // the win-rate of the horse
     private int wins;                      // total number of wins
     private int races;                     // total number of races
+    private double averageSpeed;
 
     // Betting Attributes
     private boolean betPlaced;
@@ -36,7 +37,7 @@ public class HorseGUI {
      * @param confidence how likely the horse is to move
      * @param lane track lane the horse is in
      */
-    public HorseGUI(String name, String symbol, double confidence, int lane, String breed, String coatColour, String saddle, String shoes, int wins, int races) {
+    public HorseGUI(String name, String symbol, double confidence, int lane, String breed, String coatColour, String saddle, String shoes, int wins, int races, double averageSpeed) {
         this.name = name;
         this.symbol = symbol;
         this.confidence = confidence;
@@ -48,6 +49,7 @@ public class HorseGUI {
         this.winRate = calculateWinRate(wins, races);
         this.wins = wins;
         this.races = races;
+        this.averageSpeed = averageSpeed;
 
         this.betPlaced = false;
         this.winnings = 0.0;
@@ -159,4 +161,13 @@ public class HorseGUI {
 
     /** sets the winnings of the horse @param winnings amount the horse can win */
     public void setWinnings(double winnings) { this.winnings = winnings; }
+
+    /** @return the average speed of the horse */
+    public double getAverageSpeed() { return this.averageSpeed; }
+
+    /** set the average speed of the horse */
+    public void setAverageSpeed(double averageSpeed) { this.averageSpeed = calculateAverageSpeed(averageSpeed); }
+
+    /** @return the average speed based of previosu average ans a new recording */
+    private double calculateAverageSpeed(double newSpeed) { return ((this.averageSpeed*this.races)+newSpeed)/(this.races+1); }
 }
