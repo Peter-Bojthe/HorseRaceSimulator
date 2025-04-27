@@ -9,7 +9,7 @@ public class BettingSystemGUI {
     public static double balance = 100.0;
 
     /** @return the amount of money a horse can win, @param horse is the horse, @param bet amount of money placed by the user */
-    public static double calculateWinnings(HorseGUI horse, double bet) { return ((Math.round((horse.getConfidence()+horse.getWinRate()+1.1)*bet)+bet)*100)/100.0; }
+    public static double calculateWinnings(HorseGUI horse, double bet) { return ((Math.round((horse.getConfidence()+horse.getWinRate()+horse.getAverageSpeed()+1.1)*bet)+bet)*100)/100.0; }
 
     /** add money won to the user balannce, @param wonMoney is how much the user won */
     public static void addWinnings(double wonMoney) { balance = balance + wonMoney; }

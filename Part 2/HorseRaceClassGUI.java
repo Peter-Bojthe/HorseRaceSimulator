@@ -842,11 +842,14 @@ public class HorseRaceClassGUI {
         // Update horse stats
         if (winner != null) {
             winner.setWins(winner.getWins() + 1);
+            winner.setConfidence(winner.getConfidence()*1.2);
         }
 
         for (HorseGUI h : horses) {
             h.setRaces(h.getRaces() + 1);
             h.setWinRate(h.getWins(), h.getRaces());
+            if (h.equals(winner)) continue;
+            h.setConfidence(h.getConfidence()*0.9);
         }
 
         JOptionPane.showMessageDialog(frame, message);

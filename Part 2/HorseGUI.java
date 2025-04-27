@@ -8,13 +8,13 @@ public class HorseGUI {
     // final variables
     private final String symbol;           // Symbol representing the horse in the race display
     private final String name;             // Name of the horse (immutable after creation)
-    private final double confidence;       // Confidence level of the horse (0.0 to 1.0)
     private final int lane;                // Lane number where the horse is racing 
 
     // Race variables
     private int distance;                  // Distance the horse has traveled in the race
     private boolean fallen;                // Flag indicating if the horse has fallen  
     private int lapsCompleted;             // Laps required for Oval Track
+    private double confidence;             // Confidence level of the horse (0.0 to 1.0)
 
     // Horse Success Attributes
     private double winRate;                // the win-rate of the horse
@@ -96,6 +96,9 @@ public class HorseGUI {
 
     /** @return the confidence level (0.0–1.0) */
     public double getConfidence() { return confidence; }
+
+    /** set the confidence of the horse @param newConfidence is the new confidence */
+    public void setConfidence(double newConfidence) { this.confidence = newConfidence; }
 
     /** @return the assigned track lane */
     public int getLane() { return lane; }
