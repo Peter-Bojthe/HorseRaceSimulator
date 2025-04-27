@@ -15,7 +15,7 @@ import javax.swing.table.DefaultTableModel;
  * @author Peter Bojthe
  * @version 1.0.7
  */
-public class HorseRaceSimulatorGUI {
+public class HorseRaceClassGUI {
     private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
     private final String[] weatherTypeChoice = {"SUNNY", "RAINING", "WET", "MUDDY", "SNOW", "ICY"};
     private final List<HorseGUI> horses = new ArrayList<>();
@@ -35,7 +35,7 @@ public class HorseRaceSimulatorGUI {
     private final RaceTimerGUI raceTimerUtil = new RaceTimerGUI();
 
     public static void main(String[] args) {
-        HorseRaceSimulatorGUI race = new HorseRaceSimulatorGUI();
+        HorseRaceClassGUI race = new HorseRaceClassGUI();
         race.startRaceGUI();
     }
 
@@ -437,7 +437,7 @@ public class HorseRaceSimulatorGUI {
             frame.dispose();
             resetHorseAfterRace(horses);
             resetHorseBets(horses);
-            new HorseRaceSimulatorGUI().startRaceGUI();
+            new HorseRaceClassGUI().startRaceGUI();
         });
 
         replayButton.addActionListener(e -> {
@@ -486,7 +486,7 @@ public class HorseRaceSimulatorGUI {
             "Name", "Symbol", "Breed", "Coat", "Saddle", 
             "Shoes", "Confidence (%)", "Wins", "Races", "Win Rate (%)", "Average Speed (unit/sec)"
         };
-
+    
         // Create data for the table
         Object[][] data = new Object[horses.size()][columnNames.length];
         for (int i = 0; i < horses.size(); i++) {
@@ -503,57 +503,160 @@ public class HorseRaceSimulatorGUI {
             data[i][9] = String.format("%.0f%%", horse.getWinRate() * 100);
             data[i][10] = String.format("%.2f", horse.getAverageSpeed());
         }
-
-        // Create the table with a custom model to prevent editing
+    
         JTable table = new JTable(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return false;
             }
         };
         
-        // Configure table appearance
         table.setAutoCreateRowSorter(true);
         table.setFillsViewportHeight(true);
-        table.setRowHeight(30); // Set fixed row height
-        
-        // Center-align numeric columns
+        table.setRowHeight(30);
+    
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 6; i <= 10; i++) { // Columns 6-10 (Confidence, Wins, Races, Win Rate, Average Speed)
+        for (int i = 6; i <= 10; i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
-
-        // Calculate optimal column widths
+    
         int[] colWidths = {120, 50, 100, 80, 100, 100, 100, 50, 50, 85, 200};
         for (int i = 0; i < colWidths.length; i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
         }
-
-        // Add table to scroll pane
+    
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setPreferredSize(new Dimension(Arrays.stream(colWidths).sum() + 30,Math.min(600, 50 + (horses.size() * table.getRowHeight()))));
-
-        // Add components to dialog
+        scrollPane.setPreferredSize(new Dimension(Arrays.stream(colWidths).sum() + 30, Math.min(600, 50 + (horses.size() * table.getRowHeight()))));
+    
         statsDialog.add(scrollPane, BorderLayout.CENTER);
         
-        // Close button
+        // Buttons
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(e -> statsDialog.dispose());
+        
+        JButton compareButton = new JButton("Compare Two Horses");
+        compareButton.addActionListener(e -> {
+            if (horses.size() < 2) {
+                JOptionPane.showMessageDialog(statsDialog, "Not enough horses to compare.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String[] horseNames = horses.stream().map(HorseGUI::getName).toArray(String[]::new);
+            
+            JComboBox<String> horseBox1 = new JComboBox<>(horseNames);
+            JComboBox<String> horseBox2 = new JComboBox<>(horseNames);
+            
+            JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+            panel.add(new JLabel("Select First Horse:"));
+            panel.add(horseBox1);
+            panel.add(new JLabel("Select Second Horse:"));
+            panel.add(horseBox2);
+            
+            int result = JOptionPane.showConfirmDialog(statsDialog, panel, "Choose Two Horses", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            
+            if (result == JOptionPane.OK_OPTION) {
+                String selectedHorse1 = (String) horseBox1.getSelectedItem();
+                String selectedHorse2 = (String) horseBox2.getSelectedItem();
+                
+                if (selectedHorse1.equals(selectedHorse2)) {
+                    JOptionPane.showMessageDialog(statsDialog, "Please select two different horses.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                showTwoHorseStatistics(selectedHorse1, selectedHorse2);
+            }
+        });
+        
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(closeButton);
+        buttonPanel.add(compareButton);
         statsDialog.add(buttonPanel, BorderLayout.SOUTH);
-
-        // Calculate and set dialog size
+    
         int width = scrollPane.getPreferredSize().width + 20;
         int height = scrollPane.getPreferredSize().height + buttonPanel.getPreferredSize().height + 20;
         statsDialog.setSize(width, height);
         
-        // Prevent resizing and center the dialog
         statsDialog.setResizable(false);
         statsDialog.setLocationRelativeTo(frame);
         statsDialog.setVisible(true);
     }
+    
+    /**
+     * Displays a dialog showing statistics for two selected horses.
+     */
+    @SuppressWarnings("unused")
+    private void showTwoHorseStatistics(String horseName1, String horseName2) {
+        JDialog compareDialog = new JDialog(frame, "Compare Horses", true);
+        compareDialog.setLayout(new BorderLayout());
+        
+        String[] columnNames = {
+            "Name", "Symbol", "Breed", "Coat", "Saddle", 
+            "Shoes", "Confidence (%)", "Wins", "Races", "Win Rate (%)", "Average Speed (unit/sec)"
+        };
+        
+        List<HorseGUI> selectedHorses = horses.stream()
+                .filter(h -> h.getName().equals(horseName1) || h.getName().equals(horseName2))
+                .toList();
+        
+        Object[][] data = new Object[2][columnNames.length];
+        for (int i = 0; i < selectedHorses.size(); i++) {
+            HorseGUI horse = selectedHorses.get(i);
+            data[i][0] = horse.getName();
+            data[i][1] = horse.getSymbol();
+            data[i][2] = horse.getBreed();
+            data[i][3] = horse.getCoatColour();
+            data[i][4] = horse.getSaddle();
+            data[i][5] = horse.getShoes();
+            data[i][6] = String.format("%.0f%%", horse.getConfidence() * 100);
+            data[i][7] = horse.getWins();
+            data[i][8] = horse.getRaces();
+            data[i][9] = String.format("%.0f%%", horse.getWinRate() * 100);
+            data[i][10] = String.format("%.2f", horse.getAverageSpeed());
+        }
+        
+        JTable compareTable = new JTable(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        compareTable.setAutoCreateRowSorter(true);
+        compareTable.setFillsViewportHeight(true);
+        compareTable.setRowHeight(30);
+        
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 6; i <= 10; i++) {
+            compareTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+        
+        int[] colWidths = {120, 50, 100, 80, 100, 100, 100, 50, 50, 85, 200};
+        for (int i = 0; i < colWidths.length; i++) {
+            compareTable.getColumnModel().getColumn(i).setPreferredWidth(colWidths[i]);
+        }
+        
+        JScrollPane scrollPane = new JScrollPane(compareTable);
+        scrollPane.setPreferredSize(new Dimension(Arrays.stream(colWidths).sum() + 30, Math.min(200, 50 + (compareTable.getRowHeight() * 2))));
+        
+        compareDialog.add(scrollPane, BorderLayout.CENTER);
+        
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> compareDialog.dispose());
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(closeButton);
+        compareDialog.add(buttonPanel, BorderLayout.SOUTH);
+        
+        int width = scrollPane.getPreferredSize().width + 20;
+        int height = scrollPane.getPreferredSize().height + buttonPanel.getPreferredSize().height + 20;
+        compareDialog.setSize(width, height);
+        
+        compareDialog.setResizable(false);
+        compareDialog.setLocationRelativeTo(frame);
+        compareDialog.setVisible(true);
+    }
+    
 
     /**
      * Replays the race using the same horse configurations (name, symbol, confidence, lane,... ) etc
