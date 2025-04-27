@@ -818,6 +818,10 @@ public class HorseRaceClassGUI {
         double raceLengthTime = raceTimerUtil.getElapsedSeconds();
 
         for (HorseGUI h : horses) {
+            if (h.hasFallen()) {
+                h.setAverageSpeed(0.0);
+                continue;
+            }
             h.setAverageSpeed(h.getDistance()/raceLengthTime);
         }
 
