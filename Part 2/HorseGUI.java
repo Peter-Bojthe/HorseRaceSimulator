@@ -2,40 +2,50 @@
  * Represents a horse participating in the race.
  * 
  * @author Peter Bojthe
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class HorseGUI {
+    // final variables
     private final String symbol;           // Symbol representing the horse in the race display
     private final String name;             // Name of the horse (immutable after creation)
     private final double confidence;       // Confidence level of the horse (0.0 to 1.0)
+    private final int lane;                // Lane number where the horse is racing 
+
+    // Race variables
     private int distance;                  // Distance the horse has traveled in the race
-    private boolean fallen;                // Flag indicating if the horse has fallen
-    private final int lane;                // Lane number where the horse is racing    
+    private boolean fallen;                // Flag indicating if the horse has fallen  
     private int lapsCompleted;             // Laps required for Oval Track
 
     // Horse Success Attributes
     private double winRate;                // the win-rate of the horse
     private int wins;                      // total number of wins
     private int races;                     // total number of races
-    private double averageSpeed;
+    private double averageSpeed;           // average speed of the horse from all races
 
     // Betting Attributes
-    private boolean betPlaced;
-    private double winnings;
+    private boolean betPlaced;             // flag to check if user has placeda bet on this horse
+    private double winnings;               // amount of money the horse could win
 
     // Attributes affecting confidence
     private String breed;                  // Breed of the horse
-    private String coatColour;             // Fur colour of the horse
+    private String coatColour;             // Fur/ coat colour of the horse
     private String saddle;                 // Saddle on the horse
     private String shoes;                  // Shoes the horse has
 
     /**
-     * Constructs a new horse.
+     * Constructor to make a horse
      * 
-     * @param name horse's name
-     * @param symbol character symbol for the horse
-     * @param confidence how likely the horse is to move
-     * @param lane track lane the horse is in
+     * @param name           // The name of the horse   
+     * @param symbol         // The symbol for the horse
+     * @param confidence     // The confidence rating of the horse 0-1
+     * @param lane           // The lane of the horse 
+     * @param breed          // ThE breed of the horse
+     * @param coatColour     // The coat/ fur colour of the horse
+     * @param saddle         // The type of saddle on the horse
+     * @param shoes          // The type of shoes
+     * @param wins           // Total wins of the horse
+     * @param races          // Total races the horse has been in
+     * @param averageSpeed   // The average speed of the horse from all races
      */
     public HorseGUI(String name, String symbol, double confidence, int lane, String breed, String coatColour, String saddle, String shoes, int wins, int races, double averageSpeed) {
         this.name = name;
@@ -168,6 +178,6 @@ public class HorseGUI {
     /** set the average speed of the horse */
     public void setAverageSpeed(double averageSpeed) { this.averageSpeed = calculateAverageSpeed(averageSpeed); }
 
-    /** @return the average speed based of previosu average ans a new recording */
+    /** @return the average speed based of previous average and a new recording and @param newSpeed is the new recording */
     private double calculateAverageSpeed(double newSpeed) { return ((this.averageSpeed*this.races)+newSpeed)/(this.races+1); }
 }

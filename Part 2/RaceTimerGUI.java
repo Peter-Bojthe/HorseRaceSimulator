@@ -2,7 +2,7 @@
  * The class to time each race
  * 
  * @author Peter Bojthe
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class RaceTimerGUI {
     private long raceStartTime;

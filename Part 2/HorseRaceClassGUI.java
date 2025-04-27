@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableModel;
  * GUI-based horse race simulator with straight and oval tracks.
  * 
  * @author Peter Bojthe
- * @version 1.0.6
+ * @version 1.0.7
  */
 public class HorseRaceClassGUI {
     private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
@@ -602,7 +602,7 @@ public class HorseRaceClassGUI {
             case "WET" -> "💧";
             case "MUDDY" -> "🌧️💧";
             case "SNOW" -> "❄️";
-            case "ICY" -> "🧊";
+            case "ICY" -> "❄️";
             default -> "🌤️";
         };
 
