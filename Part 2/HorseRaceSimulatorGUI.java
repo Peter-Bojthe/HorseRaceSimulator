@@ -163,7 +163,17 @@ public class HorseRaceSimulatorGUI {
         }
     
         while (true) {
-            String input = JOptionPane.showInputDialog(null,"Enter your bet amount (0.0 to " + BettingSystemGUI.balance + ")\nYour current balance: £" + String.format("%.2f", BettingSystemGUI.balance),"Place Your Bet",JOptionPane.PLAIN_MESSAGE);
+            String message = switch(weatherType.toUpperCase()) {
+                case "SUNNY" -> "The weather is sunny so it does not affect horse confidence, bets are unaffected.";
+                case "RAINING" -> "It is raining so bets are affected due to horses running slower.";
+                case "WET" -> "The track is wet so bets are affected and horses will run slower.";
+                case "MUDDY" -> "The track is muddy so bets are affected and horses will be running slower.";
+                case "SNOW" -> "It is snowing so betting is very much affected and horses will be running very slow.";
+                case "ICY" -> "The track is icy, bets are affected and horses will be running very slow.";
+                default -> "Bets are unaffected by the weather conditions currently.";
+            };
+
+            String input = JOptionPane.showInputDialog(null,message+"\n\nEnter your bet amount (0.0 to " + BettingSystemGUI.balance + ")\nYour current balance: £" + String.format("%.2f", BettingSystemGUI.balance),"Place Your Bet",JOptionPane.PLAIN_MESSAGE);
             if (input == null) { return; }
     
             try {
