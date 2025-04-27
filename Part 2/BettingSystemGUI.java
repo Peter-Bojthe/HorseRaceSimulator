@@ -2,7 +2,7 @@
  * Simple Betting System for the GUI veraion of the simulation
  * 
  * @author Peter Bojthe
- * @version 1.0.0
+ * @version 1.0.1
 */
 public class BettingSystemGUI {
     // Starting balance
