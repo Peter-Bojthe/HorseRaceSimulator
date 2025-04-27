@@ -115,10 +115,9 @@ public class HorseRaceClassGUI {
                     return;
                 }
                 String breed = (String) breedBoxes.get(i).getSelectedItem();
-                String coatColour = (String) coatBoxes .get(i).getSelectedItem();
-
-                String saddle = ((String) saddleBoxes.get(i).getSelectedItem());
-                String horseShoe = ((String) horseShoeBoxes.get(i).getSelectedItem());
+                String coatColour = (String) coatBoxes.get(i).getSelectedItem();
+                String saddle = (String) saddleBoxes.get(i).getSelectedItem();
+                String horseShoe = (String) horseShoeBoxes.get(i).getSelectedItem();
                 weatherType = weatherTypeChoice[(int)(Math.random() * weatherTypeChoice.length)];
                 double finalConfidence = calculateFinalConfidence(breed, coatColour, saddle, horseShoe, weatherType);
 
@@ -288,6 +287,8 @@ public class HorseRaceClassGUI {
         laneBoxes.clear();
         breedBoxes.clear();
         coatBoxes.clear();
+        saddleBoxes.clear();
+        horseShoeBoxes.clear();
 
         int horseCount = (Integer) horseSpinner.getValue();
         int laneCount = (Integer) laneSpinner.getValue();
@@ -879,10 +880,15 @@ public class HorseRaceClassGUI {
             data[i][3] = String.format("%.2f", h.getAverageSpeed());
         }
 
-        JTable table = new JTable(data, columns);
+        JTable table = new JTable(data, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         JScrollPane scrollPane = new JScrollPane(table);
 
-        JOptionPane.showMessageDialog(frame,scrollPane,"🏁 Race Leaderboard (Standing Horses)",JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, scrollPane, "🏁 Race Leaderboard (Standing Horses)", JOptionPane.INFORMATION_MESSAGE);
         resetHorseBets(horses);
     }
 }
