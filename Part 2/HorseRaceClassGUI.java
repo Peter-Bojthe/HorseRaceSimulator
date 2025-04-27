@@ -13,10 +13,13 @@ import javax.swing.table.DefaultTableModel;
  * GUI-based horse race simulator with straight and oval tracks.
  * 
  * @author Peter Bojthe
- * @version 1.0.7
+ * @version 1.0.8
  */
 public class HorseRaceClassGUI {
-    private final String[] trackTypeChoice = {"STRAIGHT", "OVAL"};
+    TrackType straight = new TrackType("STRAIGHT");
+    TrackType oval     = new TrackType("OVAL");
+    private final String[] trackTypeChoice = {straight.getType(), oval.getType()};
+
     private final String[] weatherTypeChoice = {"SUNNY", "RAINING", "WET", "MUDDY", "SNOW", "ICY"};
     private final List<HorseGUI> horses = new ArrayList<>();
 
@@ -432,7 +435,9 @@ public class HorseRaceClassGUI {
 
         JButton restartButton = new JButton("Restart");
         JButton replayButton = new JButton("Replay");
-        JButton raceStatsButton = new JButton("Statistics");
+        JButton raceStatsButton = new JButton("Horse Statistics");
+        JButton trackStatsButton = new JButton("Track Statistics");
+        
 
         restartButton.addActionListener(e -> {
             frame.dispose();
@@ -448,11 +453,13 @@ public class HorseRaceClassGUI {
         });
 
         raceStatsButton.addActionListener(e -> showRaceStatistics());
+        trackStatsButton.addActionListener(e -> showTrackStatistics());
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(restartButton);
         buttonPanel.add(replayButton);
         buttonPanel.add(raceStatsButton);
+        buttonPanel.add(trackStatsButton);
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
         // Resize window based on track length and lanes
@@ -471,6 +478,37 @@ public class HorseRaceClassGUI {
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
+    }
+
+    /**
+     * Show track times for each track
+     */
+    private void showTrackStatistics() {
+        StringBuilder stats = new StringBuilder();
+    
+        if (straight.getTrackTimes().isEmpty() && oval.getTrackTimes().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "No track times recorded yet.", "Track Statistics", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+    
+        if (!straight.getTrackTimes().isEmpty()) {
+            stats.append("STRAIGHT Track Times (seconds):\n");
+            for (int i = 0; i < straight.getTrackTimes().size(); i++) {
+                double time = straight.getTrackTimes().get(i);
+                stats.append(String.format("Race %d: %.2f seconds\n", i + 1, time));
+            }
+            stats.append("\n");
+        }
+    
+        if (!oval.getTrackTimes().isEmpty()) {
+            stats.append("OVAL Track Times (seconds):\n");
+            for (int i = 0; i < oval.getTrackTimes().size(); i++) {
+                double time = oval.getTrackTimes().get(i);
+                stats.append(String.format("Race %d: %.2f seconds\n", i + 1, time));
+            }
+        }
+    
+        JOptionPane.showMessageDialog(frame, stats.toString(), "Track Statistics", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -816,6 +854,9 @@ public class HorseRaceClassGUI {
     private void announceWinner() {
         raceTimerUtil.stop();
         double raceLengthTime = raceTimerUtil.getElapsedSeconds();
+
+        if (trackType.equals("STRAIGHT")) { straight.addTime(raceLengthTime); }
+        if (trackType.equals("OVAL")) { oval.addTime(raceLengthTime); }
 
         for (HorseGUI h : horses) {
             if (h.hasFallen()) {
