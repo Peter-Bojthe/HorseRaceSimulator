@@ -21,7 +21,8 @@ A Java application that simulates horse races with both terminal and graphical i
 <img width="383" alt="Betting Screen" src="https://github.com/user-attachments/assets/78125c18-3be1-4417-be7f-430d64a99f71" />
 
 ### Race Simulation
-<img width="483" alt="Customization Screen" src="https://github.com/user-attachments/assets/197fc9ca-87bd-487a-838f-7eb65ec136e7" />
+<img width="486" alt="image" src="https://github.com/user-attachments/assets/cd3e4c60-ea9c-4884-a989-851c559c1a33" />
+
 
 ### Statistics and Analytics Window
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/e938481d-476e-403e-bfd0-9db5984ff3c3" />
